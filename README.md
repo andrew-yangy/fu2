@@ -84,9 +84,9 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
   usually means one of three things, none
   need a rewrite:
 
-    - missing validation  (zod,    1d)
-    - unchecked db nulls  (strict, 1d)
-    - enum string drift   (as const, ½d)
+    • missing validation  (zod,    1d)
+    • unchecked db nulls  (strict, 1d)
+    • enum string drift   (as const, ½d)
 
   which one are you hitting?
 
@@ -154,11 +154,11 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 <span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Agent</span>(general-purpose): critic pass.
   <span style="color:#6a6a6a;">⎿</span> VERDICT: needs-fixes
     ISSUES:
-    - this is optional-chaining + nullish-
+    • this is optional-chaining + nullish-
       coalescing: (o?.a?.b?.c) ?? default
-    - 42 lines wrapping a 1-line ES2020
+    • 42 lines wrapping a 1-line ES2020
       feature
-    - nobody imports a helper for `?.`
+    • nobody imports a helper for `?.`
     SNARK: you built a polyfill for a
     feature that shipped five years ago.
 
