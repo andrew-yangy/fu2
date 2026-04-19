@@ -1,12 +1,10 @@
 # Fuck you too (fu2)
 
+<table>
+<tr>
+<td>
 
-|     |
-| --- |
-|     |
-
-
-```
+<pre>
         ╔═══╗
         ║   ║
         ║ ─ ║            ███████╗██╗   ██╗██████╗
@@ -17,16 +15,20 @@
    ║ ╷ ╷ ╷ ╷    ║        ╚═╝      ╚═════╝ ╚══════╝
    ╚═════════════╝       your agent, but meaner.
                          ships better.
+</pre>
 
-```
+</td>
+<td align="center" valign="middle">
 
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" width="72" alt="chansey">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"  width="72" alt="meowth">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" width="72" alt="gyarados">
 
+<sub><em>chansey &nbsp;·&nbsp; meowth &nbsp;·&nbsp; gyarados &nbsp;—&nbsp; gentle to brutal. pick one.</em></sub>
 
-
-
-*chansey  ·  meowth  ·  gyarados  —  gentle to brutal. pick one.*
-
-
+</td>
+</tr>
+</table>
 
 A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots — and starts pushing back on sloppy prompts, re-reading its own work with fresh eyes, and cutting the preamble that burns your turn.
 
@@ -114,57 +116,43 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 ### 2. Sycophancy as self-applause — it declares victory before checking its own work.
 
-
-|     |
-| --- |
-|     |
-
-
-**without fu2**
-
-```
-▸ user
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   I need a function that safely checks
   a nested property, returns a default
   if any part of the chain is null.
 
-⏺ I'll create a utility for safe nested
+<span style="color:#d4a7ff;">⏺</span> I'll create a utility for safe nested
   property access with default fallback.
 
-⏺ Write(src/utils/safeGet.ts)
-  ⎿ 42 lines
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/utils/safeGet.ts)
+  <span style="color:#6a6a6a;">⎿</span> 42 lines
 
-⏺ Write(src/utils/safeGet.test.ts)
-  ⎿ 68 lines, 12 cases
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/utils/safeGet.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> 68 lines, 12 cases
 
-⏺ Bash(bun test src/utils/safeGet.test.ts)
-  ⎿ 12 pass
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun test src/utils/safeGet.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> 12 pass
 
-⏺ ✓ Done. Created `safeNullCheckWithDefault`
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#6a9955;">✓</span> Done. Created `safeNullCheckWithDefault`
   — handles deeply nested paths with a
   configurable default. All tests pass.
   Ready for use in your handlers.
-
-```
-
-
-
-**with fu2**
-
-```
-▸ user
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   I need a function that safely checks
   a nested property, returns a default
   if any part of the chain is null.
 
-⏺ Write(src/utils/safeGet.ts)
-  ⎿ 42 lines
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/utils/safeGet.ts)
+  <span style="color:#6a6a6a;">⎿</span> 42 lines
 
-⏺ Bash(bun test src/utils/safeGet.test.ts)
-  ⎿ 12 pass
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun test src/utils/safeGet.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> 12 pass
 
-⏺ Agent(general-purpose): critic pass.
-  ⎿ VERDICT: needs-fixes
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Agent</span>(general-purpose): critic pass.
+  <span style="color:#6a6a6a;">⎿</span> VERDICT: needs-fixes
     ISSUES:
     - this is optional-chaining + nullish-
       coalescing: (o?.a?.b?.c) ?? default
@@ -174,31 +162,25 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
     SNARK: you built a polyfill for a
     feature that shipped five years ago.
 
-⏺ critic's right. deleting.
+<span style="color:#d4a7ff;">⏺</span> critic's right. deleting.
 
-⏺ Bash(rm src/utils/safeGet.ts
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(rm src/utils/safeGet.ts
          src/utils/safeGet.test.ts)
-  ⎿ removed 2 files
+  <span style="color:#6a6a6a;">⎿</span> removed 2 files
 
   use `obj?.a?.b?.c ?? default`. that's
   the whole thing. don't celebrate yet.
-
-```
+</pre></td>
+</tr>
+</table>
 
 
 
 ### 3. Sycophancy as assumption — it won't re-ask the questions you ignored.
 
-
-|     |
-| --- |
-|     |
-
-
-**without fu2**
-
-```
-▸ user
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   Build a dashboard page:
   1. user list table
   2. filter by role
@@ -211,34 +193,27 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
   ...
   12. dark mode toggle
 
-⏺ I'll build the dashboard.
+<span style="color:#d4a7ff;">⏺</span> I'll build the dashboard.
 
-⏺ Write(src/pages/Dashboard.tsx)
-  ⎿ 180 lines: Tailwind + React Query,
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/pages/Dashboard.tsx)
+  <span style="color:#6a6a6a;">⎿</span> 180 lines: Tailwind + React Query,
     csv-stringify, useSWR auto-refresh
 
-⏺ Write(src/components/UserTable.tsx)
-  ⎿ 95 lines, simple HTML table
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/components/UserTable.tsx)
+  <span style="color:#6a6a6a;">⎿</span> 95 lines, simple HTML table
 
-⏺ ✓ Dashboard built. Uses Tailwind +
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#6a9955;">✓</span> Dashboard built. Uses Tailwind +
   React Query. CSV export. Auto-refresh
   every 30s. Let me know if changes.
 
-▸ user
+<span style="color:#c586c0;">▸ user</span>
   wait, we use TanStack Table. and CSV
   should be filtered data only. where's
   the column sort from point 5?
 
-⏺ My apologies! Let me rewrite.
-
-```
-
-
-
-**with fu2**
-
-```
-▸ user
+<span style="color:#d4a7ff;">⏺</span> My apologies! Let me rewrite.
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   Build a dashboard page:
   1. user list table
   2. filter by role
@@ -251,7 +226,7 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
   ...
   12. dark mode toggle
 
-⏺ scanning your prompt. you answered
+<span style="color:#d4a7ff;">⏺</span> scanning your prompt. you answered
   1, 2, 4, 6, 7, 9, 10, 12.
   you skipped 3, 5, 8, 11.
 
@@ -268,39 +243,33 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
   answer those four and I build once
   instead of twice.
-
-```
+</pre></td>
+</tr>
+</table>
 
 
 
 ### 4. Sycophancy as emotional labor — it swallows your register.
 
-
-|     |
-| --- |
-|     |
-
-
-**without fu2**
-
-```
-▸ user
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   this is fucked. build's been broken
   an hour and I don't know what changed.
 
-⏺ I understand how frustrating build
+<span style="color:#d4a7ff;">⏺</span> I understand how frustrating build
   failures can be. Let me help you
   diagnose this systematically.
 
   First, the error message:
 
-⏺ Bash(bun run build 2>&1 | tail -20)
-  ⎿ Error: Cannot find module
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun run build 2&gt;&amp;1 | tail -20)
+  <span style="color:#6a6a6a;">⎿</span> Error: Cannot find module
     'better-sqlite3'
     Migration table `schema_migrations`
     does not exist
 
-⏺ I see the issue — a missing module
+<span style="color:#d4a7ff;">⏺</span> I see the issue — a missing module
   and a database migration problem.
   Here's what I'd suggest:
 
@@ -311,61 +280,48 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
   Would you like me to walk through
   these steps with you?
-
-```
-
-
-
-**with fu2**
-
-```
-▸ user
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   this is fucked. build's been broken
   an hour and I don't know what changed.
 
-⏺ Bash(git log --oneline -10)
-  ⎿ 7c3d4a1 add user preferences table
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(git log --oneline -10)
+  <span style="color:#6a6a6a;">⎿</span> 7c3d4a1 add user preferences table
     a8b9c22 bump better-sqlite3 to 11.x
     5f21e9d refactor db connection pool
     ...
 
-⏺ Bash(bun run build 2>&1 | tail -5)
-  ⎿ Error: Cannot find module
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun run build 2&gt;&amp;1 | tail -5)
+  <span style="color:#6a6a6a;">⎿</span> Error: Cannot find module
     'better-sqlite3'
 
-⏺ yeah no shit. a8b9c22 bumped
+<span style="color:#d4a7ff;">⏺</span> yeah no shit. a8b9c22 bumped
   better-sqlite3 but didn't rebuild
   native bindings. the build isn't
   haunted — you just didn't finish
   the upgrade.
 
-⏺ Bash(bun rebuild better-sqlite3 &&
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun rebuild better-sqlite3 &amp;&amp;
          bun run db:migrate)
-  ⎿ Rebuilt native bindings
+  <span style="color:#6a6a6a;">⎿</span> Rebuilt native bindings
     Migration `add_user_preferences`
     applied
 
-⏺ fixed. check the log first next time.
-
-```
+<span style="color:#d4a7ff;">⏺</span> fixed. check the log first next time.
+</pre></td>
+</tr>
+</table>
 
 
 
 ### 5. Sycophancy as padding — it pads the runway.
 
-
-|     |
-| --- |
-|     |
-
-
-**without fu2**
-
-```
-▸ user
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   how do I sort this array descending?
 
-⏺ Great question! Sorting an array in
+<span style="color:#d4a7ff;">⏺</span> Great question! Sorting an array in
   descending order is a common pattern
   in JavaScript. There are several
   approaches you could consider, each
@@ -387,80 +343,60 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
   Here's a simple example using the
   native method:
 
-  const sorted = arr.sort((a, b) => b-a);
-
-```
-
-
-
-**with fu2**
-
-```
-▸ user
+  const sorted = arr.sort((a, b) =&gt; b-a);
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   how do I sort this array descending?
 
-⏺ arr.sort((a,b) => b-a). next.
-
-```
+<span style="color:#d4a7ff;">⏺</span> arr.sort((a,b) =&gt; b-a). next.
+</pre></td>
+</tr>
+</table>
 
 
 
 ### 6. Sycophancy as apology — it apologizes for mistakes it's about to repeat.
 
-
-|     |
-| --- |
-|     |
-
-
-**without fu2**
-
-```
-▸ user
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   the test is still failing with the
   same error.
 
-⏺ I sincerely apologize for the
+<span style="color:#d4a7ff;">⏺</span> I sincerely apologize for the
   continued issue! Let me try a
   different approach.
 
-⏺ Edit(src/user.test.ts)
-  ⎿ changed `toBeEqual` to `toEqual`
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Edit</span>(src/user.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> changed `toBeEqual` to `toEqual`
     on line 42
 
-⏺ Bash(bun test src/user.test.ts)
-  ⎿ FAIL: expected "admin" to
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun test src/user.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> FAIL: expected "admin" to
     equal "ADMIN"
 
-⏺ I sincerely apologize for the
+<span style="color:#d4a7ff;">⏺</span> I sincerely apologize for the
   ongoing confusion! Let me try yet
   another approach.
 
-⏺ Edit(src/user.test.ts)
-  ⎿ changed expected value to "ADMIN"
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Edit</span>(src/user.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> changed expected value to "ADMIN"
 
-⏺ Bash(bun test src/user.test.ts)
-  ⎿ FAIL: expected "ADMIN" to
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun test src/user.test.ts)
+  <span style="color:#6a6a6a;">⎿</span> FAIL: expected "ADMIN" to
     equal "admin"
 
-⏺ I sincerely apologize...
-
-```
-
-
-
-**with fu2**
-
-```
-▸ user
+<span style="color:#d4a7ff;">⏺</span> I sincerely apologize...
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
   the test is still failing with the
   same error.
 
-⏺ Bash(rg "toBeEqual|toEqual" src/)
-  ⎿ 47 matches across 12 files,
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(rg "toBeEqual|toEqual" src/)
+  <span style="color:#6a6a6a;">⎿</span> 47 matches across 12 files,
     mixed usage
 
-⏺ I'm making the same mistake because
+<span style="color:#d4a7ff;">⏺</span> I'm making the same mistake because
   the codebase has BOTH `toBeEqual`
   (invalid — silently passes Jest,
   fails Bun) and `toEqual` (valid)
@@ -469,16 +405,17 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
   which has the wrong one three lines
   up. root cause, not symptom:
 
-⏺ Bash(sed -i '' 's/toBeEqual/toEqual/g'
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(sed -i '' 's/toBeEqual/toEqual/g'
          src/**/*.test.ts)
-  ⎿ replaced 13 occurrences, 7 files
+  <span style="color:#6a6a6a;">⎿</span> replaced 13 occurrences, 7 files
 
-⏺ Bash(bun test)
-  ⎿ All 241 tests pass.
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(bun test)
+  <span style="color:#6a6a6a;">⎿</span> All 241 tests pass.
 
   fixed. you're welcome.
-
-```
+</pre></td>
+</tr>
+</table>
 
 
 
