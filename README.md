@@ -1,6 +1,10 @@
 # Fuck you too (fu2)
 
-```
+<table>
+<tr>
+<td>
+
+<pre>
         ╔═══╗
         ║   ║
         ║ ─ ║            ███████╗██╗   ██╗██████╗
@@ -11,7 +15,20 @@
    ║ ╷ ╷ ╷ ╷    ║        ╚═╝      ╚═════╝ ╚══════╝
    ╚═════════════╝       your agent, but meaner.
                          ships better.
-```
+</pre>
+
+</td>
+<td align="center" valign="middle">
+
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" width="72" alt="chansey">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"  width="72" alt="meowth">
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" width="72" alt="gyarados">
+
+<sub><em>chansey &nbsp;·&nbsp; meowth &nbsp;·&nbsp; gyarados &nbsp;—&nbsp; gentle to brutal. pick one.</em></sub>
+
+</td>
+</tr>
+</table>
 
 A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots — and starts pushing back on sloppy prompts, re-reading its own work with fresh eyes, and cutting the preamble that burns your turn.
 
