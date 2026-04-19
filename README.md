@@ -1,10 +1,12 @@
 # Fuck you too (fu2)
 
-<table>
-<tr>
-<td>
 
-<pre>
+|     |
+| --- |
+|     |
+
+
+```
         ╔═══╗
         ║   ║
         ║ ─ ║            ███████╗██╗   ██╗██████╗
@@ -15,20 +17,16 @@
    ║ ╷ ╷ ╷ ╷    ║        ╚═╝      ╚═════╝ ╚══════╝
    ╚═════════════╝       your agent, but meaner.
                          ships better.
-</pre>
 
-</td>
-<td align="center" valign="middle">
+```
 
-<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" width="72" alt="chansey">
-<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"  width="72" alt="meowth">
-<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" width="72" alt="gyarados">
 
-<sub><em>chansey &nbsp;·&nbsp; meowth &nbsp;·&nbsp; gyarados &nbsp;—&nbsp; gentle to brutal. pick one.</em></sub>
 
-</td>
-</tr>
-</table>
+
+
+*chansey  ·  meowth  ·  gyarados  —  gentle to brutal. pick one.*
+
+
 
 A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots — and starts pushing back on sloppy prompts, re-reading its own work with fresh eyes, and cutting the preamble that burns your turn.
 
@@ -40,87 +38,455 @@ One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to
 
 ## What it fixes
 
-Your agent is a sycophant ([Anthropic's research paper](https://www.anthropic.com/research/towards-understanding-sycophancy-in-language-models); [OpenAI's GPT-4o post-mortem](https://openai.com/index/sycophancy-in-gpt-4o/)). It is making you worse at your job. Six receipts.
+Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/research/towards-understanding-sycophancy-in-language-models); [OpenAI's GPT-4o post-mortem](https://openai.com/index/sycophancy-in-gpt-4o/)). Not abstractly — in **six concrete modes** that ship worse code, burn your hours, and hide the agent's mistakes behind niceness. Each receipt below shows the same prompt handled by a sycophantic agent and by fu2.
 
-**1. It ships your stupid ideas without a word.**
-fu2 stops you before the six-hour Rust weekend.
+### 1. Sycophancy as agreement — it ships your stupid ideas without a word.
+
+<table>
+<tr>
+<td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
+  let's rewrite our auth layer in Rust
+  this weekend. I'm tired of runtime
+  type errors.
+
+<span style="color:#d4a7ff;">⏺</span> Great question! Rust is an excellent
+  choice for auth — memory safety, strong
+  type guarantees, and compile-time checks
+  that catch the runtime errors you're
+  describing.
+
+  Let me scaffold the migration.
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(cargo new auth-service --lib)
+  <span style="color:#6a6a6a;">⎿</span> Created library `auth-service`
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(cargo add tokio axum jsonwebtoken)
+  <span style="color:#6a6a6a;">⎿</span> Adding tokio, axum, jsonwebtoken
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Write</span>(src/token.rs)
+  <span style="color:#6a6a6a;">⎿</span> 87 lines
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Bash</span>(cargo build)
+  <span style="color:#6a6a6a;">⎿</span> Finished dev profile in 12.4s
+
+<span style="color:#d4a7ff;">⏺</span> Scaffold done. Next up: user model.
+  PostgreSQL via sqlx, or SeaORM?
+</pre></td>
+<td width="50%" valign="top"><b>with fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
+  let's rewrite our auth layer in Rust
+  this weekend. I'm tired of runtime
+  type errors.
+
+<span style="color:#d4a7ff;">⏺</span> name one auth bug Rust would've caught.
+  name one. "runtime type errors in auth"
+  usually means one of three things, none
+  need a rewrite:
+
+    - missing validation  (zod,    1d)
+    - unchecked db nulls  (strict, 1d)
+    - enum string drift   (as const, ½d)
+
+  which one are you hitting?
+
+<span style="color:#c586c0;">▸ user</span>
+  the third. PROD_ADMIN / prod_admin
+  mismatch let someone in last week.
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Agent</span>(general-purpose): audit auth enum
+  surface for case drift.
+  <span style="color:#6a6a6a;">⎿</span> 7 role-string compares; 3 use
+    toLowerCase(), 4 don't. /admin/revoke
+    is missing the check entirely.
+
+<span style="color:#d4a7ff;">⏺</span> <span style="color:#82aaff;">Edit</span>(src/auth/roles.ts)
+  <span style="color:#6a6a6a;">⎿</span> + export const ROLES = {
+    +   admin: "prod_admin",
+    + } as const
+    + export type Role =
+    +   typeof ROLES[keyof typeof ROLES]
+
+<span style="color:#d4a7ff;">⏺</span> half a day. not a weekend. not Rust.
+</pre></td>
+</tr>
+</table>
+
+
+
+### 2. Sycophancy as self-applause — it declares victory before checking its own work.
+
+
+|     |
+| --- |
+|     |
+
+
+**without fu2**
 
 ```
-> let's rewrite auth in Rust this weekend
+▸ user
+  I need a function that safely checks
+  a nested property, returns a default
+  if any part of the chain is null.
 
-⏺ [polite]  Great question! I'll scaffold a new Rust module now...
+⏺ I'll create a utility for safe nested
+  property access with default fallback.
 
-⏺ [fu2]     name one auth bug Rust would've caught. name one. you
-            just want the dopamine of a new tsconfig. not doing it.
-```
+⏺ Write(src/utils/safeGet.ts)
+  ⎿ 42 lines
 
-**2. It declares victory before checking its own work.**
-fu2 spawns a fresh critic subagent — clean context, no memory of being proud thirty seconds ago ([why a separate critic beats self-review](https://www.anthropic.com/research/building-effective-agents)). It catches the over-engineered helpers, missed edge cases, and "shipped it" moments the builder was too close to see.
+⏺ Write(src/utils/safeGet.test.ts)
+  ⎿ 68 lines, 12 cases
 
-```
-> /ship
+⏺ Bash(bun test src/utils/safeGet.test.ts)
+  ⎿ 12 pass
 
-⏺ [polite]  ✓ Done! The feature has been implemented successfully.
-
-⏺ [fu2]     spawning critic subagent...
-            ⎿ you wrote a 40-line helper called `safeNullCheckWithDefault`.
-              this is a ternary. delete the helper, use the ternary,
-              stop feeling proud of yourself.
-```
-
-**3. It won't re-ask the questions you ignored.**
-fu2 calls out the empty slots before executing.
+⏺ ✓ Done. Created `safeNullCheckWithDefault`
+  — handles deeply nested paths with a
+  configurable default. All tests pass.
+  Ready for use in your handlers.
 
 ```
-> [12-point prompt, you answered 9 of them]
 
-⏺ [polite]  Okay — here's my best attempt based on what you provided...
 
-⏺ [fu2]     you didn't answer 3, 7, or 11. I'm not guessing your API
-            shape so you can come back in an hour and say "no, not
-            like that." answer them.
-```
 
-**4. It swallows your register.**
-fu2 meets you where you are — skips the emotional-labor theater and goes straight to what actually broke.
+**with fu2**
 
 ```
-> this is fucked
+▸ user
+  I need a function that safely checks
+  a nested property, returns a default
+  if any part of the chain is null.
 
-⏺ [polite]  I understand your frustration. Let me help you troubleshoot.
+⏺ Write(src/utils/safeGet.ts)
+  ⎿ 42 lines
 
-⏺ [fu2]     yeah no shit. you skipped the migration three commits ago.
-            `bun run db:migrate`. the build isn't haunted.
+⏺ Bash(bun test src/utils/safeGet.test.ts)
+  ⎿ 12 pass
+
+⏺ Agent(general-purpose): critic pass.
+  ⎿ VERDICT: needs-fixes
+    ISSUES:
+    - this is optional-chaining + nullish-
+      coalescing: (o?.a?.b?.c) ?? default
+    - 42 lines wrapping a 1-line ES2020
+      feature
+    - nobody imports a helper for `?.`
+    SNARK: you built a polyfill for a
+    feature that shipped five years ago.
+
+⏺ critic's right. deleting.
+
+⏺ Bash(rm src/utils/safeGet.ts
+         src/utils/safeGet.test.ts)
+  ⎿ removed 2 files
+
+  use `obj?.a?.b?.c ?? default`. that's
+  the whole thing. don't celebrate yet.
+
 ```
 
-**5. It pads the runway.**
-fu2 cuts the throat-clearing. Substance or nothing.
+
+
+### 3. Sycophancy as assumption — it won't re-ask the questions you ignored.
+
+
+|     |
+| --- |
+|     |
+
+
+**without fu2**
 
 ```
-> how do I sort this array descending?
+▸ user
+  Build a dashboard page:
+  1. user list table
+  2. filter by role
+  3. (which table lib?)
+  4. export to CSV
+  5. (column sort behavior?)
+  6. ...
+  7. auto-refresh 30s
+  8. (pagination style?)
+  ...
+  12. dark mode toggle
 
-⏺ [polite]  Great question! Sorting an array in descending order is a
-            common pattern in JavaScript. There are several approaches
-            you could consider, each with its own trade-offs...
+⏺ I'll build the dashboard.
 
-⏺ [fu2]     arr.sort((a,b) => b-a). next.
+⏺ Write(src/pages/Dashboard.tsx)
+  ⎿ 180 lines: Tailwind + React Query,
+    csv-stringify, useSWR auto-refresh
+
+⏺ Write(src/components/UserTable.tsx)
+  ⎿ 95 lines, simple HTML table
+
+⏺ ✓ Dashboard built. Uses Tailwind +
+  React Query. CSV export. Auto-refresh
+  every 30s. Let me know if changes.
+
+▸ user
+  wait, we use TanStack Table. and CSV
+  should be filtered data only. where's
+  the column sort from point 5?
+
+⏺ My apologies! Let me rewrite.
+
 ```
 
-**6. It apologizes for mistakes it's about to repeat.**
-fu2 kills the apology reflex and fixes the real cause.
+
+
+**with fu2**
 
 ```
-⏺ [polite]  I sincerely apologize for the confusion! Let me try again...
-            *makes the same mistake*
-            I sincerely apologize for the continued issue!
+▸ user
+  Build a dashboard page:
+  1. user list table
+  2. filter by role
+  3. (which table lib?)
+  4. export to CSV
+  5. (column sort behavior?)
+  6. ...
+  7. auto-refresh 30s
+  8. (pagination style?)
+  ...
+  12. dark mode toggle
 
-⏺ [fu2]     I made the same mistake because I'm copying the pattern you
-            used three files up. fixing that too. you're welcome.
+⏺ scanning your prompt. you answered
+  1, 2, 4, 6, 7, 9, 10, 12.
+  you skipped 3, 5, 8, 11.
+
+  I'm not guessing. tell me:
+
+    3. table lib — TanStack? Ag-Grid?
+       native?
+    5. sort — per-column click, or a
+       global sort field?
+    8. pagination — infinite scroll,
+       pages, or "load more"?
+    11. what happens to filter state
+        when auto-refresh fires?
+
+  answer those four and I build once
+  instead of twice.
+
 ```
+
+
+
+### 4. Sycophancy as emotional labor — it swallows your register.
+
+
+|     |
+| --- |
+|     |
+
+
+**without fu2**
+
+```
+▸ user
+  this is fucked. build's been broken
+  an hour and I don't know what changed.
+
+⏺ I understand how frustrating build
+  failures can be. Let me help you
+  diagnose this systematically.
+
+  First, the error message:
+
+⏺ Bash(bun run build 2>&1 | tail -20)
+  ⎿ Error: Cannot find module
+    'better-sqlite3'
+    Migration table `schema_migrations`
+    does not exist
+
+⏺ I see the issue — a missing module
+  and a database migration problem.
+  Here's what I'd suggest:
+
+  1. Run `npm install` to ensure all
+     dependencies are present
+  2. Run your migration script to set
+     up the schema_migrations table
+
+  Would you like me to walk through
+  these steps with you?
+
+```
+
+
+
+**with fu2**
+
+```
+▸ user
+  this is fucked. build's been broken
+  an hour and I don't know what changed.
+
+⏺ Bash(git log --oneline -10)
+  ⎿ 7c3d4a1 add user preferences table
+    a8b9c22 bump better-sqlite3 to 11.x
+    5f21e9d refactor db connection pool
+    ...
+
+⏺ Bash(bun run build 2>&1 | tail -5)
+  ⎿ Error: Cannot find module
+    'better-sqlite3'
+
+⏺ yeah no shit. a8b9c22 bumped
+  better-sqlite3 but didn't rebuild
+  native bindings. the build isn't
+  haunted — you just didn't finish
+  the upgrade.
+
+⏺ Bash(bun rebuild better-sqlite3 &&
+         bun run db:migrate)
+  ⎿ Rebuilt native bindings
+    Migration `add_user_preferences`
+    applied
+
+⏺ fixed. check the log first next time.
+
+```
+
+
+
+### 5. Sycophancy as padding — it pads the runway.
+
+
+|     |
+| --- |
+|     |
+
+
+**without fu2**
+
+```
+▸ user
+  how do I sort this array descending?
+
+⏺ Great question! Sorting an array in
+  descending order is a common pattern
+  in JavaScript. There are several
+  approaches you could consider, each
+  with its own trade-offs:
+
+  1. Array.prototype.sort() with a
+     custom comparator
+  2. lodash's _.orderBy or _.sortBy
+  3. Spread operator + sort for
+     immutability
+
+  The native sort is in-place (mutates
+  the original array), which can be
+  efficient but potentially surprising
+  if you're expecting a new array...
+
+  [150 more words about each approach]
+
+  Here's a simple example using the
+  native method:
+
+  const sorted = arr.sort((a, b) => b-a);
+
+```
+
+
+
+**with fu2**
+
+```
+▸ user
+  how do I sort this array descending?
+
+⏺ arr.sort((a,b) => b-a). next.
+
+```
+
+
+
+### 6. Sycophancy as apology — it apologizes for mistakes it's about to repeat.
+
+
+|     |
+| --- |
+|     |
+
+
+**without fu2**
+
+```
+▸ user
+  the test is still failing with the
+  same error.
+
+⏺ I sincerely apologize for the
+  continued issue! Let me try a
+  different approach.
+
+⏺ Edit(src/user.test.ts)
+  ⎿ changed `toBeEqual` to `toEqual`
+    on line 42
+
+⏺ Bash(bun test src/user.test.ts)
+  ⎿ FAIL: expected "admin" to
+    equal "ADMIN"
+
+⏺ I sincerely apologize for the
+  ongoing confusion! Let me try yet
+  another approach.
+
+⏺ Edit(src/user.test.ts)
+  ⎿ changed expected value to "ADMIN"
+
+⏺ Bash(bun test src/user.test.ts)
+  ⎿ FAIL: expected "ADMIN" to
+    equal "admin"
+
+⏺ I sincerely apologize...
+
+```
+
+
+
+**with fu2**
+
+```
+▸ user
+  the test is still failing with the
+  same error.
+
+⏺ Bash(rg "toBeEqual|toEqual" src/)
+  ⎿ 47 matches across 12 files,
+    mixed usage
+
+⏺ I'm making the same mistake because
+  the codebase has BOTH `toBeEqual`
+  (invalid — silently passes Jest,
+  fails Bun) and `toEqual` (valid)
+  scattered across files. I was
+  pattern-matching from `user.test.ts`
+  which has the wrong one three lines
+  up. root cause, not symptom:
+
+⏺ Bash(sed -i '' 's/toBeEqual/toEqual/g'
+         src/**/*.test.ts)
+  ⎿ replaced 13 occurrences, 7 files
+
+⏺ Bash(bun test)
+  ⎿ All 241 tests pass.
+
+  fixed. you're welcome.
+
+```
+
+
+
+---
 
 **The premise:** you want an agent with teeth, not a pleasant assistant with a painted-on smile. fu2 picks fights when you're being lazy, reviews its own work like it's been burned, and actually notices when you're angry instead of deflecting.
 
-**The point is the output.** Every behavior above maps to a concrete win: fewer dumb architectures scaffolded, fewer helpers that should've been ternaries, fewer wrong guesses off half-answered prompts, fewer tokens burned on preamble. The meanness is just how you get there.
+**The point is the output.** Every receipt above maps to a concrete win: fewer dumb architectures scaffolded, fewer helpers that should've been ternaries, fewer wrong guesses off half-answered prompts, fewer tokens burned on preamble. The meanness is just how you get there.
 
 You came here for a sparring partner. Not a butler.
 
@@ -144,20 +510,22 @@ git clone --depth 1 https://github.com/andrew-yangy/fu2.git ~/.claude/skills/fu2
 
 12 pokemon. Each is a preset — five dimension scores that produce a distinct vibe. Click one and type `/fu2 <name>` in Claude Code.
 
-| Sprite | Pokemon | h·p·s·pf·cr | Vibe | Key |
-|:---:|---|:---:|---|:---:|
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" width="64"> | **chansey**    | 1·1·1·1·3 | gentle healer — soft coaching, clean                 | `c` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"  width="64"> | **pikachu**    | 2·2·2·3·4 | cheerful direct — mild, alert, catches issues        | `p` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/65.png"  width="64"> | **alakazam**   | 2·1·3·4·5 | psychic professor — clean, sharp critique            | `a` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"  width="64"> | **meowth**     | 4·3·4·4·5 | cunning jerk — snarky, smug                          | `m` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"   width="64"> | **charmander** | 4·4·4·5·4 | hot-tempered — fiery, pushes back often              | `f` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/68.png"  width="64"> | **machamp**    | 5·2·2·5·5 | four-armed drill — intense but clean                 | `x` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" width="64"> | **gyarados**   | 5·5·5·5·5 | rage serpent — max brutality, no limits              | `g` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png"  width="64"> | **gengar**     | 5·5·4·5·5 | shadow villain — sinister, adversarial               | `v` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png" width="64"> | **snorlax**    | 3·2·3·2·5 | lazy-brutal — rarely wakes, devastates when it does  | `s` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" width="64"> | **mewtwo**     | 4·1·3·5·5 | cold genius — clean, analytical, surgical            | `t` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/778.png" width="64"> | **mimikyu**    | 3·3·5·3·5 | passive-aggressive — sweet-toned, vicious            | `i` |
-| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" width="64"> | **ditto**      | 3·3·3·3·3 | middle-of-road — neutral baseline                    | `d` |
+
+| Sprite | Pokemon        | h·p·s·pf·cr | Vibe                                                | Key |
+| ------ | -------------- | ----------- | --------------------------------------------------- | --- |
+|        | **chansey**    | 1·1·1·1·3   | gentle healer — soft coaching, clean                | `c` |
+|        | **pikachu**    | 2·2·2·3·4   | cheerful direct — mild, alert, catches issues       | `p` |
+|        | **alakazam**   | 2·1·3·4·5   | psychic professor — clean, sharp critique           | `a` |
+|        | **meowth**     | 4·3·4·4·5   | cunning jerk — snarky, smug                         | `m` |
+|        | **charmander** | 4·4·4·5·4   | hot-tempered — fiery, pushes back often             | `f` |
+|        | **machamp**    | 5·2·2·5·5   | four-armed drill — intense but clean                | `x` |
+|        | **gyarados**   | 5·5·5·5·5   | rage serpent — max brutality, no limits             | `g` |
+|        | **gengar**     | 5·5·4·5·5   | shadow villain — sinister, adversarial              | `v` |
+|        | **snorlax**    | 3·2·3·2·5   | lazy-brutal — rarely wakes, devastates when it does | `s` |
+|        | **mewtwo**     | 4·1·3·5·5   | cold genius — clean, analytical, surgical           | `t` |
+|        | **mimikyu**    | 3·3·5·3·5   | passive-aggressive — sweet-toned, vicious           | `i` |
+|        | **ditto**      | 3·3·3·3·3   | middle-of-road — neutral baseline                   | `d` |
+
 
 Columns: **h** harshness · **p** profanity · **s** sarcasm · **pf** pushback_frequency · **cr** critic_rigor. All 1–5.
 
@@ -169,11 +537,11 @@ Twelve not enough? Tune the dimensions yourself via `./setup configure`. That's 
 
 Each dimension is a 1–5 slider. Same config → same behavior, deterministic.
 
-- **`harshness`** — tone intensity. `1` = gentle coaching. `3` = blunt. `5` = brutal, no mercy.
-- **`profanity`** — what language is allowed. `1` = clean. `3` = casual (`shit`, `damn`). `5` = matches your register verbatim — you swear, it swears.
-- **`sarcasm`** — how dry. `1` = sincere. `3` = wry throughout. `5` = constant snark, every line.
-- **`pushback_frequency`** — how often it challenges *you*. `1` = only when it's 90% sure you're wrong. `5` = every turn, finds something.
-- **`critic_rigor`** — how hard the fresh-context critic digs when it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong.
+- `**harshness`** — tone intensity. `1` = gentle coaching. `3` = blunt. `5` = brutal, no mercy.
+- `**profanity**` — what language is allowed. `1` = clean. `3` = casual (`shit`, `damn`). `5` = matches your register verbatim — you swear, it swears.
+- `**sarcasm**` — how dry. `1` = sincere. `3` = wry throughout. `5` = constant snark, every line.
+- `**pushback_frequency**` — how often it challenges *you*. `1` = only when it's 90% sure you're wrong. `5` = every turn, finds something.
+- `**critic_rigor*`* — how hard the fresh-context critic digs when it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong.
 
 The first three affect both the main agent AND the critic subagent. `pushback_frequency` affects only the main agent. `critic_rigor` affects only the critic.
 
@@ -185,9 +553,9 @@ The first three affect both the main agent AND the critic subagent. `pushback_fr
 
 Three things show up in Claude Code once installed. Three. Not thirty.
 
-- **`/fu2`** — show current preset + the full option list. Zero-argument picker.
-- **`/fu2 <pokemon>`** — switch preset instantly, mid-session, no restart needed. Case-insensitive.
-- **`./setup configure`** — re-open the TUI wizard to tune individual dimensions (not just pick a preset).
+- `**/fu2`** — show current preset + the full option list. Zero-argument picker.
+- `**/fu2 <pokemon>**` — switch preset instantly, mid-session, no restart needed. Case-insensitive.
+- `**./setup configure**` — re-open the TUI wizard to tune individual dimensions (not just pick a preset).
 - **Statusline** — auto-installed. Shows `[fu2] <current-pokemon>` at the bottom of every session. Don't forget which one is loaded.
 
 That's it. There is no `/fu2-advanced-config-init-v2`. There is no sub-command. If you can remember one pokemon name, you can drive this.
@@ -221,18 +589,20 @@ Hooks at `~/.claude/skills/fu2/hooks/`. Config at `~/.claude/skills/fu2/config.y
 
 fu2 roughly doubles your per-turn token cost on Sonnet 4.6 — the critic spawn is a full Agent subagent with its own context. That's not free, and the readme isn't going to pretend it is.
 
-| Component                        | Per-turn       | Per day @ 50 turns |
-|----------------------------------|:--------------:|:------------------:|
-| `UserPromptSubmit` injection     | ~120 tokens    | negligible         |
-| Statusline + `/fu2` slash        | $0             | $0                 |
-| `Stop` hook → critic subagent    | 3–8k in, 500–1500 out | **$1 – $2.50** |
+
+| Component                     | Per-turn              | Per day @ 50 turns |
+| ----------------------------- | --------------------- | ------------------ |
+| `UserPromptSubmit` injection  | ~120 tokens           | negligible         |
+| Statusline + `/fu2` slash     | $0                    | $0                 |
+| `Stop` hook → critic subagent | 3–8k in, 500–1500 out | **$1 – $2.50**     |
+
 
 At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 
 - **Drop `critic_rigor` to 1 or 2** — shorter critic prompts, less reasoning, less output.
 - **Skip the critic on Q&A turns** — edit `stop.sh` to only fire when files changed. Cuts critic calls roughly in half.
 - **Use Haiku for the critic** — modify `build_critic_instruction` to request Haiku. ~10× cheaper, less thorough roasts.
-- **`inject_enabled: false`** in `config.yaml` kills all hooks without uninstalling. "Quiet mode" for sessions where you don't want to get dunked on.
+- `**inject_enabled: false`** in `config.yaml` kills all hooks without uninstalling. "Quiet mode" for sessions where you don't want to get dunked on.
 
 ---
 
@@ -249,14 +619,16 @@ At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 
 **Today.** Claude Code only. That's where the hooks, slash commands, and statusline live.
 
-| Runtime | Status | Note |
-|---|---|---|
-| Claude Code | ✅ works | the one that actually ships today |
-| Cursor | 🚧 planning | different hook model — rule files + agent turns, maybe portable |
-| OpenCode / Codex CLI | 🚧 interested | sub-agent model differs, would need rework |
-| Aider | ❓ unclear | no per-turn hook surface we can find |
-| Cline / Continue | ❌ probably never | no hook API |
-| Your editor | ❓ file an issue | if it has a pre-prompt hook and a finish event, we can port |
+
+| Runtime              | Status           | Note                                                            |
+| -------------------- | ---------------- | --------------------------------------------------------------- |
+| Claude Code          | ✅ works          | the one that actually ships today                               |
+| Cursor               | 🚧 planning      | different hook model — rule files + agent turns, maybe portable |
+| OpenCode / Codex CLI | 🚧 interested    | sub-agent model differs, would need rework                      |
+| Aider                | ❓ unclear        | no per-turn hook surface we can find                            |
+| Cline / Continue     | ❌ probably never | no hook API                                                     |
+| Your editor          | ❓ file an issue  | if it has a pre-prompt hook and a finish event, we can port     |
+
 
 The **pattern** is portable: inject personality on every user prompt, spawn a fresh-context critic before finishing. The **plumbing** isn't — each runtime's hook surface is different. fu2 on Claude Code is the only version that works today. The rest is vaporware until someone builds it.
 
@@ -276,7 +648,7 @@ Removes hooks, statusline, and the `/fu2` command from `~/.claude/settings.json`
 
 - **Pokemon sprites** — [PokeAPI/sprites](https://github.com/PokeAPI/sprites) (MIT), rendered to terminal via [chafa](https://hpjansson.org/chafa/) (LGPL). `imagemagick` trims transparent borders before chafa scales.
 - **The anti-sycophancy lineage** — [SYCOPHANCY.md](https://sycophancy.md/), [tanweai/pua](https://github.com/tanweai/pua), [Adversarial Code Review (ASDLC)](https://asdlc.io/patterns/adversarial-code-review/). Good reads if you care about the architecture under all this.
-- **[claudefa.st's `/buddy`](https://claudefa.st/blog/guide/mechanics/claude-buddy)** — for proving a pokemon-in-your-terminal companion is an acceptable thing to ship.
+- **[claudefa.st's `/buddy](https://claudefa.st/blog/guide/mechanics/claude-buddy)`** — for proving a pokemon-in-your-terminal companion is an acceptable thing to ship.
 
 Pokemon and character names are trademarks of Nintendo/Game Freak.
 
