@@ -1,0 +1,16 @@
+# fu2 config. Edit to taste. Changes take effect on next Claude Code turn.
+
+personality:
+  harshness: 1           # 1=gentle coaching, 3=blunt, 5=brutal/cutting
+  profanity: 1           # 1=clean, 3=casual, 5=matches your register verbatim
+  sarcasm: 1             # 1=sincere, 3=dry wit, 5=constant snark
+  pushback_frequency: 1  # 1=only when certain, 3=sloppy framing, 5=every turn
+  critic_rigor: 3 # 1=skim, 3=normal review, 5=tear it apart
+
+triggers:
+  user_prompt_submit: true  # inject pushback instructions on every user turn
+  stop: true                # spawn critic subagent when Claude tries to finish
+
+# Safety: set to false to short-circuit the hooks entirely (they log but
+# inject nothing). Flip to true once you've verified hooks fire correctly.
+inject_enabled: true

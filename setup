@@ -1,0 +1,883 @@
+#!/usr/bin/env bash
+# fu2 setup: install, upgrade, and configure personality.
+# Re-run anytime. `./setup configure` re-runs the personality wizard.
+
+set -euo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_DIR="$HOME/.claude/skills"
+LINK_PATH="$SKILLS_DIR/fu2"
+CONFIG="$PROJECT_ROOT/config.yaml"
+VERSION=$(cat "$PROJECT_ROOT/VERSION" 2>/dev/null || echo "unknown")
+
+# ── Colors ──
+if [ -t 1 ]; then
+  BOLD=$'\033[1m'; DIM=$'\033[2m'; RED=$'\033[31m'; GRN=$'\033[32m'
+  YLW=$'\033[33m'; BLU=$'\033[34m'; MAG=$'\033[35m'; CYN=$'\033[36m'
+  RST=$'\033[0m'
+else
+  BOLD=""; DIM=""; RED=""; GRN=""; YLW=""; BLU=""; MAG=""; CYN=""; RST=""
+fi
+
+bold()  { printf '%s%s%s\n' "$BOLD" "$*" "$RST"; }
+dim()   { printf '%s%s%s\n' "$DIM"  "$*" "$RST"; }
+warn()  { printf '%s%s%s\n' "$YLW"  "$*" "$RST"; }
+ok()    { printf '%s%s%s\n' "$GRN"  "$*" "$RST"; }
+fail()  { printf '%s%s%s\n' "$RED"  "$*" "$RST" >&2; exit 1; }
+
+hr()    { printf '%s────────────────────────────────────────%s\n' "$DIM" "$RST"; }
+
+# ── sed -i portability (macOS vs GNU) ──
+sedi() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "$@"
+  else
+    sed -i "$@"
+  fi
+}
+
+# ── Preflight (silent unless something's actually broken) ──
+command -v jq >/dev/null || fail "jq is required. install: brew install jq"
+
+# ── Subcommand dispatch ──
+CMD="${1:-install}"
+
+# ═════════════════════════════════════════════════════════════════
+# Personality wizard
+# ═════════════════════════════════════════════════════════════════
+
+# Preset definitions: pokemon name → "harshness profanity sarcasm pushback_freq critic_rigor"
+preset_values() {
+  case "$1" in
+    chansey)    echo "1 1 1 1 3" ;;  # gentle healer: soft coaching, clean
+    pikachu)    echo "2 2 2 3 4" ;;  # cheerful but alert: mild, direct
+    alakazam)   echo "2 1 3 4 5" ;;  # psychic professor: clean, sharp critique
+    meowth)     echo "4 3 4 4 5" ;;  # cunning jerk: snarky, smug
+    charmander) echo "4 4 4 5 4" ;;  # hot-tempered: fiery reactions
+    machamp)    echo "5 2 2 5 5" ;;  # four-armed drill: intense but clean
+    gyarados)   echo "5 5 5 5 5" ;;  # rage serpent: maximum brutality
+    gengar)     echo "5 5 4 5 5" ;;  # shadow villain: sinister adversary
+    snorlax)    echo "3 2 3 2 5" ;;  # lazy-brutal: rarely wakes, devastates when it does
+    mewtwo)     echo "4 1 3 5 5" ;;  # cold genius: clean, analytical, surgical
+    mimikyu)    echo "3 3 5 3 5" ;;  # passive-aggressive: sweet-toned, vicious
+    ditto)      echo "3 3 3 3 3" ;;  # middle of road: neutral baseline
+    *) echo "" ;;
+  esac
+}
+
+
+# Level labels per dimension
+describe_harshness() {
+  case "$1" in
+    1) echo "gentle coaching" ;;
+    2) echo "frank, direct" ;;
+    3) echo "blunt, no-nonsense" ;;
+    4) echo "cutting, makes you flinch" ;;
+    5) echo "brutal, no mercy" ;;
+  esac
+}
+describe_profanity() {
+  case "$1" in
+    1) echo "clean — no swearing" ;;
+    2) echo "mild — 'damn', 'hell' ok" ;;
+    3) echo "casual — 'shit', 'damn' fine" ;;
+    4) echo "strong — 'fuck' when it fits" ;;
+    5) echo "register-match — if you swear, it swears" ;;
+  esac
+}
+describe_sarcasm() {
+  case "$1" in
+    1) echo "sincere, zero snark" ;;
+    2) echo "dry occasional wit" ;;
+    3) echo "wry throughout" ;;
+    4) echo "heavily ironic" ;;
+    5) echo "constant snark — every line" ;;
+  esac
+}
+describe_pushback() {
+  case "$1" in
+    1) echo "only when ≥90% certain you're wrong" ;;
+    2) echo "when ≥70% confident something's off" ;;
+    3) echo "on sloppy framing or hidden assumptions" ;;
+    4) echo "most turns — finds the weakness" ;;
+    5) echo "every turn — always finds something" ;;
+  esac
+}
+describe_rigor() {
+  case "$1" in
+    1) echo "skim for the obvious" ;;
+    2) echo "spot-check edges" ;;
+    3) echo "normal thorough review" ;;
+    4) echo "review thoroughly and suspiciously" ;;
+    5) echo "tear it apart — assume it's wrong" ;;
+  esac
+}
+
+# Write a dimension value back to config.yaml, preserving comments.
+set_dim() {
+  local dim="$1" val="$2"
+  sedi -E "s/^(  $dim:) [0-9]+/\\1 $val/" "$CONFIG"
+}
+
+# Read a 1-5 choice with a default. Returns value on stdout.
+read_choice() {
+  local label="$1" default="$2"
+  local ans
+  while true; do
+    printf '  %s[%s]%s: ' "$BOLD" "$default" "$RST" >&2
+    read -r ans
+    ans="${ans:-$default}"
+    if [[ "$ans" =~ ^[1-5]$ ]]; then
+      echo "$ans"
+      return
+    fi
+    warn "  enter 1, 2, 3, 4, or 5" >&2
+  done
+}
+
+# Render a visual slider for a dimension.
+render_slider() {
+  local val="$1"
+  local out=""
+  for i in 1 2 3 4 5; do
+    if [ "$i" = "$val" ]; then
+      out+="${GRN}${BOLD}●${RST}"
+    else
+      out+="${DIM}○${RST}"
+    fi
+    [ "$i" -lt 5 ] && out+=" "
+  done
+  printf '%s' "$out"
+}
+
+prompt_dimension() {
+  local name="$1" describer="$2" default="$3"
+  # Display goes to stderr so it's visible to the user but not captured by $()
+  {
+    echo ""
+    bold "  $name"
+    for i in 1 2 3 4 5; do
+      printf '    %s%d%s  %s\n' "$CYN" "$i" "$RST" "$($describer "$i")"
+    done
+  } >&2
+  # read_choice's prompt is already on stderr; the chosen value goes to stdout.
+  read_choice "$name" "$default"
+}
+
+apply_preset() {
+  local name="$1"
+  local h p s pf cd
+  read -r h p s pf cd <<< "$(preset_values "$name")"
+  set_dim harshness "$h"
+  set_dim profanity "$p"
+  set_dim sarcasm "$s"
+  set_dim pushback_frequency "$pf"
+  set_dim critic_rigor "$cd"
+  ok "  applied preset: $name"
+  render_summary
+}
+
+# In-memory preset application (TUI use). Updates TUI_* vars, does not write.
+tui_apply_preset() {
+  local name="$1"
+  local h p s pf cd
+  read -r h p s pf cd <<< "$(preset_values "$name")"
+  [ -n "$h" ] && { TUI_H=$h; TUI_P=$p; TUI_S=$s; TUI_PF=$pf; TUI_CD=$cd; }
+}
+
+render_summary() {
+  local h p s pf cd
+  h=$(awk '/^  harshness:/ {print $2}' "$CONFIG")
+  p=$(awk '/^  profanity:/ {print $2}' "$CONFIG")
+  s=$(awk '/^  sarcasm:/ {print $2}' "$CONFIG")
+  pf=$(awk '/^  pushback_frequency:/ {print $2}' "$CONFIG")
+  cd=$(awk '/^  critic_rigor:/ {print $2}' "$CONFIG")
+  echo ""
+  printf '    harshness           %s  %s\n' "$(render_slider "$h")"  "$(describe_harshness "$h")"
+  printf '    profanity           %s  %s\n' "$(render_slider "$p")"  "$(describe_profanity "$p")"
+  printf '    sarcasm             %s  %s\n' "$(render_slider "$s")"  "$(describe_sarcasm "$s")"
+  printf '    pushback_frequency  %s  %s\n' "$(render_slider "$pf")" "$(describe_pushback "$pf")"
+  printf '    critic_rigor %s  %s\n' "$(render_slider "$cd")" "$(describe_rigor "$cd")"
+}
+
+run_wizard() {
+  # TTY → interactive TUI with live bars + character face.
+  # Non-TTY → sequential dimension prompts (for testing / CI).
+  if [ -t 0 ] && [ -t 1 ]; then
+    run_tui
+  else
+    run_sequential_custom
+  fi
+}
+
+run_sequential_custom() {
+  bold "  custom personality (non-interactive mode)"
+  hr
+  local h p s pf cd
+  h=$(prompt_dimension  harshness           describe_harshness  4)
+  p=$(prompt_dimension  profanity           describe_profanity  3)
+  s=$(prompt_dimension  sarcasm             describe_sarcasm    4)
+  pf=$(prompt_dimension pushback_frequency  describe_pushback   4)
+  cd=$(prompt_dimension critic_rigor describe_rigor   5)
+  set_dim harshness           "$h"
+  set_dim profanity           "$p"
+  set_dim sarcasm             "$s"
+  set_dim pushback_frequency  "$pf"
+  set_dim critic_rigor "$cd"
+  echo ""
+  ok "  saved."
+  render_summary
+}
+
+# ═════════════════════════════════════════════════════════════════
+# Interactive TUI — arrow keys, bars, character face
+# ═════════════════════════════════════════════════════════════════
+
+# Multi-line ASCII face by preset name. Files in lib/faces/<preset>.txt.
+# Returns the face content on stdout (5-6 lines each).
+face_for_preset() {
+  local preset="$1"
+  local path="$PROJECT_ROOT/lib/faces/$preset.txt"
+  if [ -f "$path" ]; then
+    cat "$path"
+  else
+    cat "$PROJECT_ROOT/lib/faces/custom.txt"
+  fi
+}
+
+# Color for the character based on level.
+color_for_level() {
+  case "$1" in
+    1|2) echo "$GRN" ;;
+    3)   echo "$YLW" ;;
+    4|5) echo "$RED" ;;
+  esac
+}
+
+# Render a 10-char bar for value N (1-5). 2 chars per level.
+render_bar() {
+  local val="$1"
+  local color; color=$(color_for_level "$val")
+  local filled=$(( val * 2 ))
+  local empty=$(( 10 - filled ))
+  local bar=""
+  local i
+  for ((i=0; i<filled; i++)); do bar+="█"; done
+  local dim_part=""
+  for ((i=0; i<empty; i++)); do dim_part+="░"; done
+  printf '%s%s%s%s%s%s' "$color" "$bar" "$RST" "$DIM" "$dim_part" "$RST"
+}
+
+# Constraint checks — detect incoherent dimension combinations.
+# Echoes zero or more warning strings to stdout, one per line.
+#
+# Rules:
+#   profanity > harshness + 1   → gentle voice + crude words = incoherent
+#   sarcasm   > pushback + 2    → constant snark with no real pushback = noise
+tui_warnings() {
+  if [ "$TUI_P" -gt $((TUI_H + 1)) ]; then
+    printf 'profanity(%d) > harshness(%d)+1 — gentle voice + crude words = incoherent\n' \
+      "$TUI_P" "$TUI_H"
+  fi
+  if [ "$TUI_S" -gt $((TUI_PF + 2)) ]; then
+    printf 'sarcasm(%d) > pushback_frequency(%d)+2 — constant snark without pushback = noise\n' \
+      "$TUI_S" "$TUI_PF"
+  fi
+}
+
+# Globals for TUI state.
+TUI_H=0; TUI_P=0; TUI_S=0; TUI_PF=0; TUI_CD=0
+TUI_SEL=0  # 0..4 = which dim is selected
+TUI_NAMES=(harshness profanity sarcasm pushback_frequency critic_rigor)
+TUI_DESCRIBERS=(describe_harshness describe_profanity describe_sarcasm describe_pushback describe_rigor)
+
+tui_get_val() {
+  case "$1" in
+    0) echo "$TUI_H" ;;
+    1) echo "$TUI_P" ;;
+    2) echo "$TUI_S" ;;
+    3) echo "$TUI_PF" ;;
+    4) echo "$TUI_CD" ;;
+  esac
+}
+
+tui_set_val() {
+  local idx="$1" val="$2"
+  [ "$val" -lt 1 ] && val=1
+  [ "$val" -gt 5 ] && val=5
+  case "$idx" in
+    0) TUI_H=$val ;;
+    1) TUI_P=$val ;;
+    2) TUI_S=$val ;;
+    3) TUI_PF=$val ;;
+    4) TUI_CD=$val ;;
+  esac
+}
+
+tui_avg() {
+  echo $(( (TUI_H + TUI_P + TUI_S + TUI_PF + TUI_CD + 2) / 5 ))
+}
+
+tui_draw() {
+  local avg label face_color frame=""
+  avg=$(tui_avg)
+  label=$(tui_label)
+  face_color=$(color_for_level "$avg")
+
+  # Build the entire frame in one string — single write = no flicker.
+  # \033[H     = cursor home (does NOT clear)
+  # \033[K     = erase to end of line (clears trailing chars from prev frame)
+  # \033[J     = erase from cursor to end of screen (trims trailing lines)
+  frame+=$'\033[H'
+  frame+=$'\033[K\n'
+
+  # Face file derives from label — tui_label always returns a pokemon name.
+  local face_file="$PROJECT_ROOT/lib/faces/${label}.txt"
+  [ -f "$face_file" ] || face_file="$PROJECT_ROOT/lib/faces/pikachu.txt"
+
+  local term_cols; term_cols=$(tput cols 2>/dev/null || echo 80)
+
+  # ── Banner (mid-finger + fu2) at top of TUI, centered ──
+  # Each banner line gets padded to center it in the terminal.
+  local banner_lines max_bw=0 bw bline
+  # Banner content as an array — kept in sync with print_banner()
+  local banner_content="        ╔═══╗
+        ║   ║
+        ║ ─ ║
+        ║   ║                  ███████╗██╗   ██╗██████╗
+        ║   ║                  ██╔════╝██║   ██║╚════██╗
+        ║   ║                  █████╗  ██║   ██║ █████╔╝
+        ║   ║                  ██╔══╝  ██║   ██║██╔═══╝
+    ╔═══╝   ╚═══╗               ██║     ╚██████╔╝███████╗
+   ╔╝           ╚╗              ╚═╝      ╚═════╝ ╚══════╝
+   ║ ╷  ╷  ╷  ╷  ║
+   ║             ║   your agent, but meaner (v$VERSION)
+   ╚═════════════╝"
+
+  # Measure max banner width (banner has no ANSI, so raw wc -m is fine)
+  while IFS= read -r bline; do
+    bw=$(printf '%s' "$bline" | wc -m | tr -d ' ')
+    [ "$bw" -gt "$max_bw" ] && max_bw=$bw
+  done <<< "$banner_content"
+  local banner_pad=$(( (term_cols - max_bw) / 2 ))
+  [ "$banner_pad" -lt 0 ] && banner_pad=0
+  local banner_spaces; printf -v banner_spaces '%*s' "$banner_pad" ''
+
+  while IFS= read -r bline; do
+    frame+="${MAG}${BOLD}${banner_spaces}${bline}${RST}"$'\033[K\n'
+  done <<< "$banner_content"
+  frame+=$'\033[K\n'
+
+  # ── Pokemon sprite, centered horizontally + bottom-aligned in a fixed-height canvas ──
+  # Canvas height = 14 — sprites rendered at 28×14 from PokeAPI's 475×475
+  # official-artwork PNGs via chafa. Bottom-align pads shorter sprites on top
+  # so the label stays at a consistent Y position.
+  local SPRITE_CANVAS_H=14
+
+  # Measure max visual width of this sprite (for horizontal centering).
+  local max_w=0 stripped_line trimmed_line w line sprite_h=0
+  while IFS= read -r line; do
+    sprite_h=$((sprite_h + 1))
+    stripped_line=$(printf '%s' "$line" | sed $'s/\033\\[[0-9;]*m//g')
+    trimmed_line=$(printf '%s' "$stripped_line" | sed 's/[[:space:]]*$//')
+    w=$(printf '%s' "$trimmed_line" | wc -m | tr -d ' ')
+    [ "$w" -gt "$max_w" ] && max_w=$w
+  done < "$face_file"
+  local pad=$(( (term_cols - max_w) / 2 ))
+  [ "$pad" -lt 0 ] && pad=0
+  local spaces; printf -v spaces '%*s' "$pad" ''
+
+  # Top padding to bottom-align the sprite in the canvas.
+  local top_pad=$(( SPRITE_CANVAS_H - sprite_h ))
+  [ "$top_pad" -lt 0 ] && top_pad=0
+  local k
+  for ((k=0; k<top_pad; k++)); do
+    frame+=$'\033[K\n'
+  done
+
+  while IFS= read -r line; do
+    frame+="$spaces$line"$'\033[0m\033[K\n'
+  done < "$face_file"
+
+  # Label centered under the sprite
+  local label_text; label_text=$(printf 'fu2: %s' "$label")
+  local label_pad=$(( (term_cols - ${#label_text}) / 2 ))
+  [ "$label_pad" -lt 0 ] && label_pad=0
+  printf -v spaces '%*s' "$label_pad" ''
+  frame+=$(printf '%s%s%s%s%s' "$spaces" "$BOLD" "$face_color" "$label_text" "$RST")
+  frame+=$'\033[K\n'
+  frame+=$'\033[K\n'
+
+  # Dimension rows. Selected row gets the ▸ marker + bold value/desc.
+  local i name describer val desc marker drow
+  for i in 0 1 2 3 4; do
+    name="${TUI_NAMES[$i]}"
+    describer="${TUI_DESCRIBERS[$i]}"
+    val=$(tui_get_val "$i")
+    desc=$($describer "$val")
+    if [ "$i" = "$TUI_SEL" ]; then
+      marker="${CYN}${BOLD}▸${RST}"
+      drow=$(printf '  %s %-20s %s  %s%d/5%s  %s%s%s' \
+        "$marker" "$name" "$(render_bar "$val")" "$BOLD" "$val" "$RST" "$BOLD" "$desc" "$RST")
+    else
+      drow=$(printf '    %-20s %s  %d/5  %s%s%s' \
+        "$name" "$(render_bar "$val")" "$val" "$DIM" "$desc" "$RST")
+    fi
+    frame+="$drow"$'\033[K\n'
+  done
+
+  # Incoherent-dimension warnings (yellow, soft — not blocking save).
+  local warnings; warnings=$(tui_warnings)
+  if [ -n "$warnings" ]; then
+    frame+=$'\033[K\n'
+    while IFS= read -r w; do
+      frame+=$(printf '  %s⚠%s  %s%s%s' "$YLW" "$RST" "$DIM" "$w" "$RST")
+      frame+=$'\033[K\n'
+    done <<< "$warnings"
+  fi
+
+  frame+=$'\033[K\n'
+  frame+=$(printf '  %s↑↓%s select   %s←→%s adjust   %s1-5%s jump   %senter%s save   %sq%s cancel' \
+    "$CYN" "$RST" "$CYN" "$RST" "$CYN" "$RST" "$CYN" "$RST" "$CYN" "$RST")
+  frame+=$'\033[K\n'
+  # Help footer: 12 pokemon on two lines, consistent "key=name" format.
+  # Colors: key in cyan, name in dim.
+  _fmt_chip() { printf '%s%s%s=%s%s%s ' "$CYN" "$1" "$RST" "$DIM" "$2" "$RST"; }
+  frame+=$(printf '  %spokemon:%s  %s%s%s%s%s%s' \
+    "$DIM" "$RST" \
+    "$(_fmt_chip c chansey)" "$(_fmt_chip p pikachu)" "$(_fmt_chip a alakazam)" \
+    "$(_fmt_chip m meowth)" "$(_fmt_chip f charmander)" "$(_fmt_chip x machamp)")
+  frame+=$'\033[K\n'
+  frame+=$(printf '            %s%s%s%s%s%s' \
+    "$(_fmt_chip g gyarados)" "$(_fmt_chip v gengar)" "$(_fmt_chip s snorlax)" \
+    "$(_fmt_chip t mewtwo)" "$(_fmt_chip i mimikyu)" "$(_fmt_chip d ditto)")
+  frame+=$'\033[K\n'
+
+  # Trim any leftover lines below (happens if a previous frame was longer).
+  frame+=$'\033[J'
+
+  # Single atomic write — no flicker.
+  printf '%s' "$frame"
+}
+
+# Label: pokemon name for current personality. Exact preset match if possible,
+# otherwise pick the pokemon whose intensity matches current avg.
+tui_label() {
+  local cur="$TUI_H $TUI_P $TUI_S $TUI_PF $TUI_CD"
+  local preset
+  for preset in chansey pikachu alakazam meowth charmander machamp gyarados gengar \
+                snorlax mewtwo mimikyu ditto; do
+    if [ "$(preset_values "$preset")" = "$cur" ]; then
+      echo "$preset"
+      return
+    fi
+  done
+  # Off-preset: map avg intensity → named pokemon so face and label agree.
+  case "$(tui_avg)" in
+    1) echo "chansey" ;;
+    2) echo "pikachu" ;;
+    3) echo "alakazam" ;;
+    4) echo "meowth" ;;
+    5) echo "gyarados" ;;
+    *) echo "pikachu" ;;
+  esac
+}
+
+run_tui() {
+  # Preload current config values.
+  TUI_H=$(awk '/^  harshness:/ {print $2; exit}' "$CONFIG")
+  TUI_P=$(awk '/^  profanity:/ {print $2; exit}' "$CONFIG")
+  TUI_S=$(awk '/^  sarcasm:/ {print $2; exit}' "$CONFIG")
+  TUI_PF=$(awk '/^  pushback_frequency:/ {print $2; exit}' "$CONFIG")
+  TUI_CD=$(awk '/^  critic_rigor:/ {print $2; exit}' "$CONFIG")
+  TUI_SEL=0
+
+  # Enter raw mode, switch to alt screen buffer, hide cursor.
+  # Alt screen keeps the main terminal scrollback clean AND gives us a
+  # stable canvas for flicker-free redraws.
+  stty_orig=$(stty -g)
+  stty -icanon -echo min 1 time 0
+  printf '\033[?1049h'  # alt screen buffer
+  printf '\033[?25l'    # hide cursor
+  printf '\033[H\033[2J'  # one-time clear of the alt buffer (not user's terminal)
+  # Restore on exit: cursor, main screen buffer, terminal mode.
+  trap 'stty "$stty_orig"; printf "\033[?25h\033[?1049l"' EXIT INT TERM
+
+  local key rest cur
+  while true; do
+    tui_draw
+    # Read a single char. May be an escape sequence.
+    IFS= read -rsn1 key
+    if [ "$key" = $'\e' ]; then
+      IFS= read -rsn2 rest 2>/dev/null || rest=""
+      key="$key$rest"
+    fi
+    case "$key" in
+      $'\e[A') TUI_SEL=$(( (TUI_SEL + 4) % 5 )) ;;   # up
+      $'\e[B') TUI_SEL=$(( (TUI_SEL + 1) % 5 )) ;;   # down
+      $'\e[C'|'+') cur=$(tui_get_val "$TUI_SEL"); tui_set_val "$TUI_SEL" $((cur + 1)) ;;  # right
+      $'\e[D'|'-') cur=$(tui_get_val "$TUI_SEL"); tui_set_val "$TUI_SEL" $((cur - 1)) ;;  # left
+      1|2|3|4|5) tui_set_val "$TUI_SEL" "$key" ;;
+      c|C) tui_apply_preset chansey ;;     # gentle healer
+      p|P) tui_apply_preset pikachu ;;     # cheerful direct
+      a|A) tui_apply_preset alakazam ;;    # psychic professor
+      m|M) tui_apply_preset meowth ;;      # cunning jerk
+      f|F) tui_apply_preset charmander ;;  # fiery temper (F for Fire)
+      x|X) tui_apply_preset machamp ;;     # four-armed drill (X for fleX)
+      g|G) tui_apply_preset gyarados ;;    # rage serpent
+      v|V) tui_apply_preset gengar ;;      # shadow villain
+      s|S) tui_apply_preset snorlax ;;     # lazy-brutal
+      t|T) tui_apply_preset mewtwo ;;      # cold genius (T for meTwo — M taken)
+      i|I) tui_apply_preset mimikyu ;;     # passive-aggressive
+      d|D) tui_apply_preset ditto ;;       # middle-of-road
+      '')  # enter
+        break
+        ;;
+      q|Q|$'\e')  # quit without saving
+        stty "$stty_orig"
+        printf '\033[?25h\033[?1049l'
+        trap - EXIT INT TERM
+        warn "  cancelled — no changes written"
+        return 1
+        ;;
+    esac
+  done
+
+  # Restore terminal (cursor, main screen buffer, cooked mode).
+  stty "$stty_orig"
+  printf '\033[?25h\033[?1049l'
+  trap - EXIT INT TERM
+
+  # Persist.
+  set_dim harshness           "$TUI_H"
+  set_dim profanity           "$TUI_P"
+  set_dim sarcasm             "$TUI_S"
+  set_dim pushback_frequency  "$TUI_PF"
+  set_dim critic_rigor "$TUI_CD"
+
+  ok "  saved."
+  render_summary
+}
+
+# ═════════════════════════════════════════════════════════════════
+# Upgrade check
+# ═════════════════════════════════════════════════════════════════
+
+check_upgrade() {
+  # Silent when there's nothing to do — only prints when an upgrade is actionable.
+  [ -d "$PROJECT_ROOT/.git" ] || return 0
+  command -v git >/dev/null || return 0
+  git -C "$PROJECT_ROOT" remote | grep -q . || return 0
+  git -C "$PROJECT_ROOT" fetch --quiet origin 2>/dev/null || return 0
+
+  local branch behind
+  branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+  behind=$(git -C "$PROJECT_ROOT" rev-list "HEAD..origin/$branch" --count 2>/dev/null || echo 0)
+
+  [ "$behind" -eq 0 ] && return 0
+
+  bold "upgrade available: $behind commit(s) behind origin/$branch"
+  git -C "$PROJECT_ROOT" log --oneline "HEAD..origin/$branch" | head -10 | sed 's/^/  /'
+
+  printf '\napply now? [y/N] '
+  read -r ans
+  [[ "$ans" =~ ^[Yy]$ ]] || { dim "skipped"; return 0; }
+
+  local stashed=0
+  if ! git -C "$PROJECT_ROOT" diff --quiet config.yaml 2>/dev/null; then
+    dim "stashing config.yaml changes..."
+    git -C "$PROJECT_ROOT" stash push --quiet -m "fu2-autoupgrade" -- config.yaml
+    stashed=1
+  fi
+
+  git -C "$PROJECT_ROOT" pull --ff-only --quiet origin "$branch"
+
+  if [ "$stashed" -eq 1 ]; then
+    dim "restoring config.yaml..."
+    git -C "$PROJECT_ROOT" stash pop --quiet || warn "config.yaml conflict — resolve manually"
+  fi
+
+  VERSION=$(cat "$PROJECT_ROOT/VERSION" 2>/dev/null || echo "unknown")
+  ok "upgraded to v$VERSION"
+}
+
+# ═════════════════════════════════════════════════════════════════
+# Install
+# ═════════════════════════════════════════════════════════════════
+
+# Global set by install_skill so callers don't have to overload exit codes.
+FIRST_RUN=0
+
+install_skill() {
+  [ -d "$SKILLS_DIR" ] || mkdir -p "$SKILLS_DIR"
+  if [ -e "$LINK_PATH" ] && [ ! -L "$LINK_PATH" ]; then
+    fail "$LINK_PATH exists and is not a symlink. remove it first."
+  fi
+  FIRST_RUN=0
+  [ -L "$LINK_PATH" ] || FIRST_RUN=1
+  ln -sfn "$PROJECT_ROOT" "$LINK_PATH"
+
+  # Guard against empty globs under set -u (nullglob isn't default in bash 3.2)
+  local f
+  for f in "$PROJECT_ROOT/hooks/"*.sh "$PROJECT_ROOT/lib/"*.sh; do
+    [ -f "$f" ] && chmod +x "$f"
+  done
+  chmod +x "$PROJECT_ROOT/setup"
+}
+
+# Default to "failed/unknown" — only flip to 0 after actual successful write.
+# Defaulting to 0 would be the same sycophancy this skill is built to fight.
+HOOKS_REGISTERED=1
+
+# Auto-register hooks in ~/.claude/settings.json. Idempotent: removes any
+# fu2 hook entries (matched by the "/fu2/hooks/<name>.sh" literal substring
+# so repo moves don't accumulate stale duplicates AND we don't over-match
+# on things like `my-fu2/...-wrapper.sh`) before adding fresh ones.
+register_hooks() {
+  HOOKS_REGISTERED=1
+  local settings="$HOME/.claude/settings.json"
+  local backup="$settings.fu2.bak"   # namespaced so we don't clobber other tools' .bak
+  local up_cmd="$LINK_PATH/hooks/user-prompt-submit.sh"
+  local stop_cmd="$LINK_PATH/hooks/stop.sh"
+  local tmp="$settings.fu2.tmp.$$"
+
+  # Cleanup orphan tmp on any function return (success, jq failure, signal, etc).
+  trap "rm -f '$tmp'" RETURN
+
+  [ -f "$settings" ] || echo '{}' > "$settings"
+
+  # Read once into memory and validate THAT — avoids the validate→write
+  # TOCTOU window where another process could swap in bad JSON.
+  local orig
+  if ! orig=$(cat "$settings" 2>/dev/null); then
+    warn "could not read ~/.claude/settings.json — hooks not registered"
+    return 1
+  fi
+  if ! echo "$orig" | jq empty 2>/dev/null; then
+    warn "~/.claude/settings.json is not valid JSON — hooks not registered"
+    return 1
+  fi
+
+  # Back up only if no fu2 backup exists yet this session (preserve first-fail state).
+  [ -f "$backup" ] || printf '%s' "$orig" > "$backup"
+
+  if ! echo "$orig" | jq \
+    --arg up "$up_cmd" --arg st "$stop_cmd" \
+    --arg up_key "/fu2/hooks/user-prompt-submit.sh" \
+    --arg st_key "/fu2/hooks/stop.sh" '
+    .hooks = (.hooks // {}) |
+    .hooks.UserPromptSubmit = ((.hooks.UserPromptSubmit // [])
+      | map(select([.hooks[]?.command // ""] | any(contains($up_key)) | not))) +
+      [{matcher: "", hooks: [{type: "command", command: $up, timeout: 5}]}] |
+    .hooks.Stop = ((.hooks.Stop // [])
+      | map(select([.hooks[]?.command // ""] | any(contains($st_key)) | not))) +
+      [{matcher: "", hooks: [{type: "command", command: $st, timeout: 30}]}]
+  ' > "$tmp"; then
+    warn "jq failed rewriting settings.json — hooks not registered (backup at $backup)"
+    return 1
+  fi
+
+  # Validate output before swapping in.
+  if ! jq empty "$tmp" 2>/dev/null; then
+    warn "produced invalid settings.json — aborted swap (backup at $backup)"
+    return 1
+  fi
+
+  mv "$tmp" "$settings"
+  HOOKS_REGISTERED=0
+}
+
+# Flip inject_enabled: false → true (wizard completed = user committed).
+enable_injection() {
+  sedi 's/^inject_enabled: false/inject_enabled: true/' "$CONFIG"
+}
+
+# Register the statusline script in ~/.claude/settings.json. Same
+# validate-then-swap pattern as register_hooks. Idempotent.
+STATUSLINE_REGISTERED=1
+register_statusline() {
+  STATUSLINE_REGISTERED=1
+  local settings="$HOME/.claude/settings.json"
+  local cmd="$LINK_PATH/bin/fu2-statusline.sh"
+  local tmp="$settings.fu2stat.tmp.$$"
+  trap "rm -f '$tmp'" RETURN
+
+  [ -f "$settings" ] || echo '{}' > "$settings"
+
+  local orig
+  if ! orig=$(cat "$settings" 2>/dev/null); then
+    warn "could not read settings.json — statusline not registered"
+    return 1
+  fi
+  if ! echo "$orig" | jq empty 2>/dev/null; then
+    warn "settings.json not valid JSON — statusline not registered"
+    return 1
+  fi
+
+  if ! echo "$orig" | jq --arg cmd "$cmd" '
+    .statusLine = {type: "command", command: $cmd, padding: 0}
+  ' > "$tmp"; then
+    warn "jq failed writing statusline config — skipped"
+    return 1
+  fi
+  if ! jq empty "$tmp" 2>/dev/null; then
+    warn "produced invalid settings.json — skipped statusline swap"
+    return 1
+  fi
+  mv "$tmp" "$settings"
+  STATUSLINE_REGISTERED=0
+}
+
+# Install the /fu2 slash command to ~/.claude/commands/fu2.md.
+# This is what users type to switch pokemon mid-session.
+SLASH_REGISTERED=1
+register_slash_command() {
+  SLASH_REGISTERED=1
+  local dest_dir="$HOME/.claude/commands"
+  local src="$PROJECT_ROOT/commands/fu2.md"
+  [ -d "$dest_dir" ] || mkdir -p "$dest_dir"
+  if [ ! -f "$src" ]; then
+    warn "/fu2 slash command source missing at $src — skipped"
+    return 1
+  fi
+  cp "$src" "$dest_dir/fu2.md" || {
+    warn "could not copy /fu2 command to $dest_dir — skipped"
+    return 1
+  }
+  SLASH_REGISTERED=0
+}
+
+# Print the banner again (since alt-screen ate the first print).
+#
+# Layout: polished hand with raised middle finger (double-box outline,
+# fingernail detail, thumb curl) on the left; ANSI-shadow 'fu2' text
+# vertically centered on the right; tagline below the fist.
+print_banner() {
+  cat <<EOF
+${MAG}${BOLD}
+            ╔═══╗
+            ║   ║
+            ║ ─ ║
+            ║   ║                  ███████╗██╗   ██╗██████╗
+            ║   ║                  ██╔════╝██║   ██║╚════██╗
+            ║   ║                  █████╗  ██║   ██║ █████╔╝
+            ║   ║                  ██╔══╝  ██║   ██║██╔═══╝
+        ╔═══╝   ╚═══╗               ██║     ╚██████╔╝███████╗
+       ╔╝           ╚╗              ╚═╝      ╚═════╝ ╚══════╝
+       ║ ╷  ╷  ╷  ╷  ║
+       ║             ║${RST}${DIM}   your agent, but meaner (v$VERSION)${RST}
+${MAG}${BOLD}       ╚═════════════╝${RST}
+EOF
+}
+
+# Minimal post-install success screen.
+# Honest about what actually worked — no fake checkmarks.
+print_success() {
+  # Read all 5 dims. If any is missing, pokemon lookup falls through to "?"
+  # so we don't silently lie about which personality is active.
+  local h p s pf cd pokemon="?"
+  h=$(awk '/^  harshness:/ {print $2; exit}' "$CONFIG")
+  p=$(awk '/^  profanity:/ {print $2; exit}' "$CONFIG")
+  s=$(awk '/^  sarcasm:/ {print $2; exit}' "$CONFIG")
+  pf=$(awk '/^  pushback_frequency:/ {print $2; exit}' "$CONFIG")
+  cd=$(awk '/^  critic_rigor:/ {print $2; exit}' "$CONFIG")
+
+  if [ -n "$h" ] && [ -n "$p" ] && [ -n "$s" ] && [ -n "$pf" ] && [ -n "$cd" ]; then
+    local key="$h $p $s $pf $cd"
+    for preset in chansey pikachu alakazam meowth charmander machamp gyarados gengar; do
+      if [ "$(preset_values "$preset")" = "$key" ]; then
+        pokemon="$preset"; break
+      fi
+    done
+    # Off-preset: map avg → named pokemon so the label still reflects reality.
+    if [ "$pokemon" = "?" ]; then
+      local avg=$(( (h + p + s + pf + cd + 2) / 5 ))
+      case "$avg" in
+        1) pokemon="chansey (custom)" ;;
+        2) pokemon="pikachu (custom)" ;;
+        3) pokemon="alakazam (custom)" ;;
+        4) pokemon="meowth (custom)" ;;
+        5) pokemon="gyarados (custom)" ;;
+      esac
+    fi
+  fi
+
+  echo ""
+  print_banner
+  echo ""
+  printf '  %s✓%s installed     %s%s%s\n' "$GRN" "$RST" "$DIM" "~/.claude/skills/fu2" "$RST"
+  # Only claim each thing is wired if it actually succeeded.
+  if [ "${HOOKS_REGISTERED:-1}" -eq 0 ]; then
+    printf '  %s✓%s hooks wired   %s%s%s\n' "$GRN" "$RST" "$DIM" "~/.claude/settings.json" "$RST"
+  else
+    printf '  %s⚠%s hooks not wired — see warning above\n' "$YLW" "$RST"
+  fi
+  if [ "${STATUSLINE_REGISTERED:-1}" -eq 0 ]; then
+    printf '  %s✓%s statusline    %s%s%s\n' "$GRN" "$RST" "$DIM" "shows current pokemon in Claude Code" "$RST"
+  else
+    printf '  %s⚠%s statusline not registered\n' "$YLW" "$RST"
+  fi
+  if [ "${SLASH_REGISTERED:-1}" -eq 0 ]; then
+    printf '  %s✓%s /fu2 command  %s%s%s\n' "$GRN" "$RST" "$DIM" "type /fu2 <name> to switch mid-session" "$RST"
+  else
+    printf '  %s⚠%s /fu2 slash command not installed\n' "$YLW" "$RST"
+  fi
+  printf '  %s✓%s personality   %s%s%s\n' "$GRN" "$RST" "$BOLD" "$pokemon" "$RST"
+  echo ""
+  printf '  %sstart a new Claude Code session — fu2 is live%s\n' "$DIM" "$RST"
+  printf '  %s./setup configure%s re-tune dimensions  ·  %s/fu2 <name>%s switch preset in Claude Code\n' "$CYN" "$RST" "$CYN" "$RST"
+  echo ""
+}
+
+# ═════════════════════════════════════════════════════════════════
+# Dispatch
+# ═════════════════════════════════════════════════════════════════
+
+case "$CMD" in
+  preview)
+    # Render the TUI frame once, static, no alt-screen, no raw mode.
+    # Useful for debugging or demoing what the TUI looks like.
+    TUI_H=$(awk '/^  harshness:/ {print $2; exit}' "$CONFIG")
+    TUI_P=$(awk '/^  profanity:/ {print $2; exit}' "$CONFIG")
+    TUI_S=$(awk '/^  sarcasm:/ {print $2; exit}' "$CONFIG")
+    TUI_PF=$(awk '/^  pushback_frequency:/ {print $2; exit}' "$CONFIG")
+    TUI_CD=$(awk '/^  critic_rigor:/ {print $2; exit}' "$CONFIG")
+    TUI_SEL=0
+    TUI_NAMES=(harshness profanity sarcasm pushback_frequency critic_rigor)
+    TUI_DESCRIBERS=(describe_harshness describe_profanity describe_sarcasm describe_pushback describe_rigor)
+    # If a preset name was passed as 2nd arg, apply it
+    if [ -n "${2:-}" ]; then
+      vals=$(preset_values "$2")
+      if [ -n "$vals" ]; then
+        read -r TUI_H TUI_P TUI_S TUI_PF TUI_CD <<< "$vals"
+      fi
+    fi
+    # Clear screen first, then render
+    printf '\033[H\033[2J'
+    tui_draw
+    echo ""
+    ;;
+  configure)
+    run_wizard
+    print_success
+    ;;
+  install|"")
+    check_upgrade  # silent when up-to-date
+    install_skill  # sets FIRST_RUN; errors still surface via set -e
+    if [ "$FIRST_RUN" -eq 1 ]; then
+      run_wizard            # TUI (first-time only)
+    fi
+    register_hooks       || true
+    register_statusline  || true
+    register_slash_command || true
+    # Only flip inject_enabled AFTER hooks are actually wired — otherwise
+    # the config says "on" but no hooks run, and user is silently stuck.
+    if [ "$FIRST_RUN" -eq 1 ] && [ "$HOOKS_REGISTERED" -eq 0 ]; then
+      enable_injection
+    fi
+    print_success
+    ;;
+  *)
+    fail "unknown command: $CMD (try: ./setup | ./setup configure)"
+    ;;
+esac
