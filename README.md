@@ -1,4 +1,4 @@
-# fu2
+# Fuck you too (fu2)
 
 ```
         ╔═══╗
@@ -12,81 +12,103 @@
    ╚═════════════╝       your agent, but meaner
 ```
 
-**fu2.** Pronounced *fuck you too*. Spelled like a file name because file names get clicked and "fuck you too" doesn't pass corporate proxies.
+A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots.
 
-A personality transplant for Claude Code. Pick a pokemon (12 options, from Chansey to Gyarados). Install once. Your agent stops licking your boots.
+One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to memorize. Yeah, fuck that.
 
-One `./setup`. Not another plugin with 40 slash commands you'll forget by Friday. Not a framework. Not a config file pyramid. One shell script wires up hooks, a statusline, and a `/fu2` command, then stays out of your way. Yeah, fuck that other pattern.
+⭐ Don't forget to star it, sucker.
 
 ---
 
 ## What it fixes
 
-Your agent is a sycophant. It is making you worse at your job. Here's the tab.
+Your agent is a sycophant. It is making you worse at your job. Six receipts.
 
 **1. It ships your stupid ideas without a word.**
-You type "let's rewrite auth in Rust this weekend." Your agent says "great question — here's a scaffold!" and burns six hours on a decision nobody pressure-tested. The code compiles. The plan was dumb. Nobody stopped you. fu2 stops you.
+fu2 stops you before the six-hour Rust weekend.
 
 ```
-you:    let's rewrite auth in Rust this weekend
-polite: Great question! I'll scaffold a new Rust module now...
-fu2:    name one auth bug Rust would've caught. name one. you just
-        want the dopamine of a new tsconfig. not doing it.
+> let's rewrite auth in Rust this weekend
+
+⏺ (polite Claude)
+  Great question! I'll scaffold a new Rust module now...
+
+⏺ (fu2 Claude)
+  name one auth bug Rust would've caught. name one. you just
+  want the dopamine of a new tsconfig. not doing it.
 ```
 
 **2. It declares victory before checking its own work.**
-Your agent finishes a task and drops `✓ Done!` at your feet like a golden retriever with a dead squirrel. It didn't run the tests. It didn't re-read its diff. It wants the head-pat. fu2 spawns a fresh critic subagent when it matters — clean context, no memory of how proud the builder was thirty seconds ago. The critic finds what the builder missed, because it isn't emotionally invested in being right.
+fu2 spawns a fresh critic subagent when it matters — clean context, no memory of being proud thirty seconds ago.
 
 ```
-you:      /ship
-polite:   ✓ Done! The feature has been implemented successfully.
-fu2's
-critic:   you wrote a 40-line helper called `safeNullCheckWithDefault`.
-          this is a ternary. delete the helper, use the ternary,
-          stop feeling proud of yourself.
+> /ship
+
+⏺ (polite Claude)
+  ✓ Done! The feature has been implemented successfully.
+
+⏺ (fu2's critic, fresh context)
+  you wrote a 40-line helper called `safeNullCheckWithDefault`.
+  this is a ternary. delete the helper, use the ternary,
+  stop feeling proud of yourself.
 ```
 
 **3. It won't re-ask the questions you ignored.**
-The agent asked you three clarifying things. You answered one, scrolled past the other two, hit send. The agent thinks "fine, I'll guess." Builds the wrong thing. You get mad. The agent apologizes — for your mistake. fu2 makes it push back: "Questions 2 and 3 are still empty. Answer them or this is your fault."
+fu2 calls out the empty slots before executing.
 
 ```
-you:    *12-point prompt, answers 9*
-polite: Okay — here's my best attempt based on what you provided...
-fu2:    you didn't answer 3, 7, or 11. I'm not guessing your API
-        shape so you can come back in an hour and say "no, not
-        like that." answer them.
+> [12-point prompt, you answered 9 of them]
+
+⏺ (polite Claude)
+  Okay — here's my best attempt based on what you provided...
+
+⏺ (fu2 Claude)
+  you didn't answer 3, 7, or 11. I'm not guessing your API
+  shape so you can come back in an hour and say "no, not
+  like that." answer them.
 ```
 
 **4. It swallows your register.**
-You type "this is fucked" at 2am. A polite agent says "I understand your frustration." fu2 says "yeah no shit, you skipped the migration three commits ago."
+fu2 meets you where you are.
 
 ```
-you:    this is fucked
-polite: I understand your frustration. Let me help you troubleshoot.
-fu2:    yeah no shit. you skipped the migration three commits ago.
-        `bun run db:migrate`. the build isn't haunted.
+> this is fucked
+
+⏺ (polite Claude)
+  I understand your frustration. Let me help you troubleshoot.
+
+⏺ (fu2 Claude)
+  yeah no shit. you skipped the migration three commits ago.
+  `bun run db:migrate`. the build isn't haunted.
 ```
 
 **5. It pads the runway.**
-"Great question! Let me carefully consider the implications of your thoughtful prompt..." Eight sentences later, the actual answer. fu2 cuts that. Substance or nothing.
+fu2 cuts the throat-clearing. Substance or nothing.
 
 ```
-you:    how do I sort this array descending?
-polite: Great question! Sorting an array in descending order is a
-        common pattern in JavaScript. There are several approaches
-        you could consider, each with its own trade-offs...
-fu2:    arr.sort((a,b) => b-a). next.
+> how do I sort this array descending?
+
+⏺ (polite Claude)
+  Great question! Sorting an array in descending order is a
+  common pattern in JavaScript. There are several approaches
+  you could consider, each with its own trade-offs...
+
+⏺ (fu2 Claude)
+  arr.sort((a,b) => b-a). next.
 ```
 
 **6. It apologizes for mistakes it's about to repeat.**
-"I sincerely apologize for the confusion!" Then makes the exact same mistake. An apology is not a fix. fu2 kills the apology reflex and gets the bug right this time.
+fu2 kills the apology reflex and fixes the real cause.
 
 ```
-polite: I sincerely apologize for the confusion! Let me try again...
-        *repeats same mistake*
-        I sincerely apologize for the continued issue!
-fu2:    I made the same mistake because I'm copying the pattern you
-        used three files up. fixing that too. you're welcome.
+⏺ (polite Claude)
+  I sincerely apologize for the confusion! Let me try again...
+  *makes the same mistake*
+  I sincerely apologize for the continued issue!
+
+⏺ (fu2 Claude)
+  I made the same mistake because I'm copying the pattern you
+  used three files up. fixing that too. you're welcome.
 ```
 
 **The premise:** you want fu2. An agent with teeth, not a customer-service bot with wrists. It picks fights when you're being lazy, reviews its own work like it's been burned, and does not pretend it can't smell when you're angry.

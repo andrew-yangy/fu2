@@ -611,6 +611,12 @@ FIRST_RUN=0
 install_skill() {
   [ -d "$SKILLS_DIR" ] || mkdir -p "$SKILLS_DIR"
 
+  # Seed config.yaml from config.default.yaml on first install. config.yaml is
+  # gitignored so it's per-install user state — upgrades can't clobber it.
+  if [ ! -f "$CONFIG" ] && [ -f "$PROJECT_ROOT/config.default.yaml" ]; then
+    cp "$PROJECT_ROOT/config.default.yaml" "$CONFIG"
+  fi
+
   # Three install shapes:
   #   1. Clone-in-place  — project IS at $LINK_PATH. No symlink needed.
   #   2. Dev symlink     — project elsewhere (e.g. ~/Repos/fu2), symlink from $LINK_PATH.

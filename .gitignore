@@ -12,3 +12,4 @@
 
 # per-install runtime state (update cache, upgrade markers, etc.)
 .state/
+config.yaml
