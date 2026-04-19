@@ -97,19 +97,28 @@ You came here for a sparring partner. Not a butler.
 
 ## Install
 
+**One-liner.** Copy, paste, done.
+
 ```sh
-git clone <repo> ~/Repos/fu2
-cd ~/Repos/fu2
-./setup
+git clone --single-branch --depth 1 https://github.com/andrew-yangy/fu2.git ~/.claude/skills/fu2 && cd ~/.claude/skills/fu2 && ./setup
 ```
 
-That's the whole thing. The setup script walks you through picking a pokemon (colored TUI wizard — pick by arrow keys or type a single-letter shortcut), then wires up the hooks, the statusline, and the `/fu2` slash command. Restart Claude Code once afterward so the new command and statusline load. Done.
-
-No 20-skill docs to skim. No manual `settings.json` paste. No framework to learn.
+That's it. Clones into `~/.claude/skills/fu2`, runs `./setup` which walks you through picking a pokemon (colored TUI — pick by arrow keys or a single-letter shortcut), wires up the hooks, the statusline, and the `/fu2` slash command. Restart Claude Code once afterward so the new command and statusline load. Done.
 
 Missing deps? `./setup` auto-installs `jq`, `chafa`, `imagemagick` via `brew` (macOS) or `apt`/`dnf` (Linux). Needs a true-color terminal — iTerm2, Terminal.app, Warp, WezTerm, kitty, any modern Linux terminal.
 
-**Re-run `./setup` anytime.** It checks the git remote, offers to pull if behind, stashes your local `config.yaml` so your personality tuning survives upgrades.
+### Auto-upgrade
+
+fu2 upgrades itself. On every Claude Code session start, a `SessionStart` hook runs `bin/fu2-update-check` (rate-limited to once per 24h) — if the remote `VERSION` is ahead, it silently `git pull`s, stashes+restores your `config.yaml` so your personality tuning survives, and leaves you a one-line notice in the first-turn context: `[fu2 auto-upgrade] fu2: upgraded 0.1.0 → 0.2.0`.
+
+No re-running `./setup`. No re-picking a pokemon. No remembering to check.
+
+Disable with `rm ~/.claude/skills/fu2/.state/` or skip the upgrade for one session by deleting the marker file. Force-check with `FU2_FORCE=1 ~/.claude/skills/fu2/bin/fu2-update-check`.
+
+### Install variants
+
+- **Dev mode** (clone elsewhere, symlink): `git clone <url> ~/Repos/fu2 && cd ~/Repos/fu2 && ./setup` — setup detects the different directory and symlinks `~/.claude/skills/fu2 → ~/Repos/fu2` so your edits take effect immediately.
+- **Custom install dir**: clone to anywhere, then `FU2_LINK=~/other-path ./setup` (not yet supported; open an issue if you want this).
 
 ---
 

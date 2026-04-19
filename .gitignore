@@ -9,3 +9,6 @@
 # temporary
 *.tmp
 .backup-*/
+
+# per-install runtime state (update cache, upgrade markers, etc.)
+.state/

@@ -610,16 +610,29 @@ FIRST_RUN=0
 
 install_skill() {
   [ -d "$SKILLS_DIR" ] || mkdir -p "$SKILLS_DIR"
-  if [ -e "$LINK_PATH" ] && [ ! -L "$LINK_PATH" ]; then
-    fail "$LINK_PATH exists and is not a symlink. remove it first."
+
+  # Three install shapes:
+  #   1. Clone-in-place  — project IS at $LINK_PATH. No symlink needed.
+  #   2. Dev symlink     — project elsewhere (e.g. ~/Repos/fu2), symlink from $LINK_PATH.
+  #   3. Conflict        — $LINK_PATH is a non-symlink dir that isn't this project → bail.
+  if [ "$PROJECT_ROOT" = "$LINK_PATH" ]; then
+    # Clone-in-place: nothing to link. First run = marker file absent.
+    FIRST_RUN=0
+    [ -f "$PROJECT_ROOT/.state/installed" ] || FIRST_RUN=1
+    mkdir -p "$PROJECT_ROOT/.state"
+    touch "$PROJECT_ROOT/.state/installed"
+  else
+    if [ -e "$LINK_PATH" ] && [ ! -L "$LINK_PATH" ]; then
+      fail "$LINK_PATH exists and is not a symlink. remove it first."
+    fi
+    FIRST_RUN=0
+    [ -L "$LINK_PATH" ] || FIRST_RUN=1
+    ln -sfn "$PROJECT_ROOT" "$LINK_PATH"
   fi
-  FIRST_RUN=0
-  [ -L "$LINK_PATH" ] || FIRST_RUN=1
-  ln -sfn "$PROJECT_ROOT" "$LINK_PATH"
 
   # Guard against empty globs under set -u (nullglob isn't default in bash 3.2)
   local f
-  for f in "$PROJECT_ROOT/hooks/"*.sh "$PROJECT_ROOT/lib/"*.sh; do
+  for f in "$PROJECT_ROOT/hooks/"*.sh "$PROJECT_ROOT/lib/"*.sh "$PROJECT_ROOT/bin/"*; do
     [ -f "$f" ] && chmod +x "$f"
   done
   chmod +x "$PROJECT_ROOT/setup"
@@ -639,6 +652,7 @@ register_hooks() {
   local backup="$settings.fu2.bak"   # namespaced so we don't clobber other tools' .bak
   local up_cmd="$LINK_PATH/hooks/user-prompt-submit.sh"
   local stop_cmd="$LINK_PATH/hooks/stop.sh"
+  local ss_cmd="$LINK_PATH/hooks/session-start.sh"
   local tmp="$settings.fu2.tmp.$$"
 
   # Cleanup orphan tmp on any function return (success, jq failure, signal, etc).
@@ -662,16 +676,20 @@ register_hooks() {
   [ -f "$backup" ] || printf '%s' "$orig" > "$backup"
 
   if ! echo "$orig" | jq \
-    --arg up "$up_cmd" --arg st "$stop_cmd" \
+    --arg up "$up_cmd" --arg st "$stop_cmd" --arg ss "$ss_cmd" \
     --arg up_key "/fu2/hooks/user-prompt-submit.sh" \
-    --arg st_key "/fu2/hooks/stop.sh" '
+    --arg st_key "/fu2/hooks/stop.sh" \
+    --arg ss_key "/fu2/hooks/session-start.sh" '
     .hooks = (.hooks // {}) |
     .hooks.UserPromptSubmit = ((.hooks.UserPromptSubmit // [])
       | map(select([.hooks[]?.command // ""] | any(contains($up_key)) | not))) +
       [{matcher: "", hooks: [{type: "command", command: $up, timeout: 5}]}] |
     .hooks.Stop = ((.hooks.Stop // [])
       | map(select([.hooks[]?.command // ""] | any(contains($st_key)) | not))) +
-      [{matcher: "", hooks: [{type: "command", command: $st, timeout: 30}]}]
+      [{matcher: "", hooks: [{type: "command", command: $st, timeout: 30}]}] |
+    .hooks.SessionStart = ((.hooks.SessionStart // [])
+      | map(select([.hooks[]?.command // ""] | any(contains($ss_key)) | not))) +
+      [{matcher: "", hooks: [{type: "command", command: $ss, timeout: 15}]}]
   ' > "$tmp"; then
     warn "jq failed rewriting settings.json — hooks not registered (backup at $backup)"
     return 1

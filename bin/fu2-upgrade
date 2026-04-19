@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# fu2-upgrade — apply a pending upgrade via git pull, preserving local config.
+#
+# Called by the SessionStart hook when fu2-update-check reports UPGRADE_AVAILABLE.
+# Can also be run manually: `bash ~/.claude/skills/fu2/bin/fu2-upgrade`
+#
+# Safety:
+#   - Only runs if the install is a git clone with a reachable origin
+#   - Stashes local config.yaml edits, pulls, restores them
+#   - Records the pre-upgrade version in .state/just-upgraded-from so the
+#     next update-check can surface a "you upgraded" notification
+
+set -euo pipefail
+
+FU2_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STATE_DIR="$FU2_DIR/.state"
+VERSION_FILE="$FU2_DIR/VERSION"
+MARKER_FILE="$STATE_DIR/just-upgraded-from"
+
+# Not a git clone → nothing we can pull. User did a manual install.
+if [ ! -d "$FU2_DIR/.git" ]; then
+  echo "fu2-upgrade: not a git clone, skipping" >&2
+  exit 1
+fi
+
+command -v git >/dev/null || { echo "fu2-upgrade: git not found" >&2; exit 1; }
+
+mkdir -p "$STATE_DIR"
+
+old_ver=$(cat "$VERSION_FILE" 2>/dev/null || echo "0.0.0")
+
+# Stash config.yaml if locally modified so it survives the pull.
+stashed=0
+if ! git -C "$FU2_DIR" diff --quiet config.yaml 2>/dev/null; then
+  git -C "$FU2_DIR" stash push --quiet -m "fu2-autoupgrade" -- config.yaml 2>/dev/null && stashed=1
+fi
+
+# Fetch + fast-forward pull. If FF fails (e.g. local commits), bail cleanly.
+if ! git -C "$FU2_DIR" pull --ff-only --quiet origin main 2>/dev/null; then
+  # restore stash on failure so user's config changes aren't lost in limbo
+  [ "$stashed" -eq 1 ] && git -C "$FU2_DIR" stash pop --quiet 2>/dev/null || true
+  echo "fu2-upgrade: git pull failed (non-fast-forward or offline)" >&2
+  exit 1
+fi
+
+# Restore config.yaml
+if [ "$stashed" -eq 1 ]; then
+  git -C "$FU2_DIR" stash pop --quiet 2>/dev/null || \
+    echo "fu2-upgrade: config.yaml conflict — resolve manually, backup in git stash" >&2
+fi
+
+new_ver=$(cat "$VERSION_FILE" 2>/dev/null || echo "?")
+
+# Drop the marker so next update-check prints "JUST_UPGRADED <old> <new>"
+echo "$old_ver" > "$MARKER_FILE"
+
+echo "fu2: upgraded $old_ver → $new_ver"

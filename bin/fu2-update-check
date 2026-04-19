@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# fu2-update-check — lightweight remote-version check, cached for 24h.
+#
+# Output (one line, or nothing):
+#   UPGRADE_AVAILABLE <old> <new>   — remote VERSION differs from local
+#   JUST_UPGRADED <old> <new>       — a recent upgrade just finished
+#   (nothing)                       — up to date, snoozed, offline, or disabled
+#
+# Env overrides (for testing):
+#   FU2_REMOTE_URL   — override VERSION URL
+#   FU2_STATE_DIR    — override state dir (default: $FU2_DIR/.state)
+#   FU2_FORCE        — any value bypasses the 24h cache
+
+set -euo pipefail
+
+FU2_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STATE_DIR="${FU2_STATE_DIR:-$FU2_DIR/.state}"
+CACHE_FILE="$STATE_DIR/last-update-check"
+MARKER_FILE="$STATE_DIR/just-upgraded-from"
+VERSION_FILE="$FU2_DIR/VERSION"
+REMOTE_URL="${FU2_REMOTE_URL:-https://raw.githubusercontent.com/andrew-yangy/fu2/main/VERSION}"
+
+mkdir -p "$STATE_DIR"
+
+# ── One-shot "just upgraded" marker (consumed once) ──
+if [ -f "$MARKER_FILE" ]; then
+  old=$(cat "$MARKER_FILE" 2>/dev/null || echo "?")
+  new=$(cat "$VERSION_FILE" 2>/dev/null || echo "?")
+  rm -f "$MARKER_FILE"
+  echo "JUST_UPGRADED $old $new"
+  exit 0
+fi
+
+# ── Rate-limit to once per 24h unless --force ──
+if [ -z "${FU2_FORCE:-}" ] && [ "${1:-}" != "--force" ] && [ -f "$CACHE_FILE" ]; then
+  # stat -f %m on macOS, -c %Y on Linux
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    last=$(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
+  else
+    last=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)
+  fi
+  now=$(date +%s)
+  if [ $((now - last)) -lt 86400 ]; then
+    exit 0
+  fi
+fi
+touch "$CACHE_FILE"
+
+# ── Fetch remote VERSION (silent fail if offline) ──
+local_ver=$(cat "$VERSION_FILE" 2>/dev/null || echo "0.0.0")
+remote_ver=$(curl -fsS --max-time 3 "$REMOTE_URL" 2>/dev/null | tr -d '[:space:]') || exit 0
+[ -z "$remote_ver" ] && exit 0
+
+if [ "$local_ver" != "$remote_ver" ]; then
+  echo "UPGRADE_AVAILABLE $local_ver $remote_ver"
+fi
