@@ -274,6 +274,7 @@ render_bar() {
 # Rules:
 #   profanity > harshness + 1   → gentle voice + crude words = incoherent
 #   sarcasm   > pushback + 2    → constant snark with no real pushback = noise
+#   pushback_frequency=1 and critic_rigor>1 → critic never fires, rigor is a no-op
 tui_warnings() {
   if [ "$TUI_P" -gt $((TUI_H + 1)) ]; then
     printf 'profanity(%d) > harshness(%d)+1 — gentle voice + crude words = incoherent\n' \
@@ -282,6 +283,10 @@ tui_warnings() {
   if [ "$TUI_S" -gt $((TUI_PF + 2)) ]; then
     printf 'sarcasm(%d) > pushback_frequency(%d)+2 — constant snark without pushback = noise\n' \
       "$TUI_S" "$TUI_PF"
+  fi
+  if [ "$TUI_PF" -eq 1 ] && [ "$TUI_CD" -gt 1 ]; then
+    printf 'pushback_frequency=1 disables the critic — critic_rigor(%d) is a no-op here\n' \
+      "$TUI_CD"
   fi
 }
 

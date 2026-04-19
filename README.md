@@ -495,10 +495,21 @@ Each dimension is a 1–5 slider. Same config → same behavior, deterministic.
 - **harshness** — tone intensity. `1` = gentle coaching. `3` = blunt. `5` = brutal, no mercy.
 - **profanity** — what language is allowed. `1` = clean. `3` = casual (`shit`, `damn`). `5` = matches your register verbatim — you swear, it swears.
 - **sarcasm** — how dry. `1` = sincere. `3` = wry throughout. `5` = constant snark, every line.
-- **pushback_frequency** — how often it challenges *you*. `1` = only when it's 90% sure you're wrong. `5` = every turn, finds something.
-- **critic_rigor** — how hard the fresh-context critic digs when it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong.
+- **pushback_frequency** — how often pushback happens. Governs **both** the main agent challenging *you* AND the critic subagent firing. One dimension, two targets, same axis:
 
-The first three affect both the main agent AND the critic subagent. `pushback_frequency` affects only the main agent. `critic_rigor` affects only the critic.
+  | value | main agent | critic fires when... |
+  |:---:|---|---|
+  | 1 | only when ≥90% sure you're wrong | never |
+  | 2 | when ≥70% sure something's off | ≥3 file edits this turn |
+  | 3 | on sloppy framing, vague prompts | any file edit this turn |
+  | 4 | most turns, finds the weakness | any tool call this turn |
+  | 5 | every turn, always | any tool call this turn |
+
+  Universal skip above all: if the agent made zero tool calls this turn, the critic never fires — nothing to critique on "hi → hey".
+
+- **critic_rigor** — how hard the critic digs *when* it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong. Orthogonal to `pushback_frequency` — rigor is intensity, frequency is whether.
+
+The first three (harshness, profanity, sarcasm) affect both the main agent AND the critic subagent. `pushback_frequency` governs main-agent challenging **and** critic firing. `critic_rigor` affects only the critic.
 
 **Not every combination is coherent.** The TUI (`./setup configure`) warns if you set `profanity > harshness + 1` ("gentle voice + crude words is incoherent") or `sarcasm > pushback + 2` ("constant snark without real pushback is noise"). Warnings are soft — save whatever you want. It's your agent, go nuts.
 
@@ -554,8 +565,8 @@ fu2 roughly doubles your per-turn token cost on Sonnet 4.6 — the critic spawn 
 
 At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 
+- **Drop `pushback_frequency` to 2 or 3** — critic only fires on file edits (3 = any edit, 2 = ≥3 edits). Cuts critic calls roughly in half on typical sessions. Set it to 1 to disable the critic entirely without touching hooks.
 - **Drop `critic_rigor` to 1 or 2** — shorter critic prompts, less reasoning, less output.
-- **Skip the critic on Q&A turns** — edit `stop.sh` to only fire when files changed. Cuts critic calls roughly in half.
 - **Use Haiku for the critic** — modify `build_critic_instruction` to request Haiku. ~10× cheaper, less thorough roasts.
 - **`inject_enabled: false`** in `config.yaml` kills all hooks without uninstalling. "Quiet mode" for sessions where you don't want to get dunked on.
 
