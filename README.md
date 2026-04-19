@@ -131,16 +131,41 @@ Missing deps? `./setup` auto-installs `jq`, `chafa`, `imagemagick` via `brew` (m
 
 ### Auto-upgrade
 
-fu2 upgrades itself. On every Claude Code session start, a `SessionStart` hook runs `bin/fu2-update-check` (rate-limited to once per 24h) — if the remote `VERSION` is ahead, it silently `git pull`s, stashes+restores your `config.yaml` so your personality tuning survives, and leaves you a one-line notice in the first-turn context: `[fu2 auto-upgrade] fu2: upgraded 0.1.0 → 0.2.0`.
+fu2 upgrades itself. On every Claude Code session start, a `SessionStart` hook runs `bin/fu2-update-check` (rate-limited to once per 24h) — if the remote `VERSION` is ahead, it silently `git pull`s and injects a one-line notice into the first-turn context: `[fu2 auto-upgrade] fu2: upgraded 0.1.0 → 0.2.0`.
 
 No re-running `./setup`. No re-picking a pokemon. No remembering to check.
 
-Disable with `rm ~/.claude/skills/fu2/.state/` or skip the upgrade for one session by deleting the marker file. Force-check with `FU2_FORCE=1 ~/.claude/skills/fu2/bin/fu2-update-check`.
+**Your `config.yaml` is safe.** It's gitignored (per-install user state), so pulls literally can't touch your preset or dimension tuning. The shipped template lives at `config.default.yaml` — `./setup` copies it to `config.yaml` on first install if you don't already have one.
+
+Force-check: `FU2_FORCE=1 ~/.claude/skills/fu2/bin/fu2-update-check`
+Manually trigger: `bash ~/.claude/skills/fu2/bin/fu2-upgrade`
 
 ### Install variants
 
-- **Dev mode** (clone elsewhere, symlink): `git clone <url> ~/Repos/fu2 && cd ~/Repos/fu2 && ./setup` — setup detects the different directory and symlinks `~/.claude/skills/fu2 → ~/Repos/fu2` so your edits take effect immediately.
-- **Custom install dir**: clone to anywhere, then `FU2_LINK=~/other-path ./setup` (not yet supported; open an issue if you want this).
+- **Dev mode** (clone elsewhere, symlink): `git clone https://github.com/andrew-yangy/fu2.git ~/Repos/fu2 && cd ~/Repos/fu2 && ./setup` — setup detects the different directory and symlinks `~/.claude/skills/fu2 → ~/Repos/fu2` so your edits take effect immediately.
+- **Clone-in-place** (the one-liner above): project and install path are the same directory; auto-upgrade works out of the box.
+
+---
+
+## Uninstall
+
+```sh
+cd ~/.claude/skills/fu2 && ./setup uninstall
+```
+
+Removes, idempotently:
+- `UserPromptSubmit` / `Stop` / `SessionStart` hook entries from `~/.claude/settings.json` (only the ones pointing at `/fu2/hooks/`)
+- `statusLine` entry if it points at our script
+- `~/.claude/commands/fu2.md` (the `/fu2` slash command)
+- `~/.claude/skills/fu2` symlink (dev-mode installs only)
+
+Left behind on purpose — delete yourself if you want the full nuke:
+- `~/.claude/logs/fu2.log` — hook activity log
+- `~/.claude/settings.json.fu2.bak` — pre-install settings backup (safety net)
+- Your clone dir (`rm -rf ~/.claude/skills/fu2` for clone-in-place, or delete `~/Repos/fu2` yourself for dev mode)
+- `config.yaml` — your personality tuning, in case you reinstall
+
+Restart Claude Code after `./setup uninstall` so the hooks, statusline, and slash command fully unload.
 
 ---
 
@@ -246,6 +271,23 @@ At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 - **Swearing is probabilistic.** `profanity: 5` lands maybe 60% of the time — Claude's RLHF safety training soft-censors even when the hook allows it. Not fu2's fault. Tune harshness up or pick a more aggressive preset.
 - **Critic latency.** The Stop hook adds 5–30 seconds per turn. If that's too slow, drop `critic_rigor` or add the skip condition.
 - **Don't name anything else `fu2`.** The skill uses the directory path `~/.claude/skills/fu2/`. Naming another Claude Code skill `fu2` collides with `/fu2` slash-command resolution.
+
+---
+
+## Roadmap
+
+**Today.** Claude Code only. That's where the hooks, slash commands, and statusline live.
+
+| Runtime | Status | Note |
+|---|---|---|
+| Claude Code | ✅ works | the one that actually ships today |
+| Cursor | 🚧 planning | different hook model — rule files + agent turns, maybe portable |
+| OpenCode / Codex CLI | 🚧 interested | sub-agent model differs, would need rework |
+| Aider | ❓ unclear | no per-turn hook surface we can find |
+| Cline / Continue | ❌ probably never | no hook API |
+| Your editor | ❓ file an issue | if it has a pre-prompt hook and a finish event, we can port |
+
+The **pattern** is portable: inject personality on every user prompt, spawn a fresh-context critic before finishing. The **plumbing** isn't — each runtime's hook surface is different. fu2 on Claude Code is the only version that works today. The rest is vaporware until someone builds it.
 
 ---
 

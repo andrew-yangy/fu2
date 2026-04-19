@@ -771,6 +771,79 @@ register_slash_command() {
   SLASH_REGISTERED=0
 }
 
+# Remove everything fu2 installed:
+#   - hook entries from ~/.claude/settings.json (UserPromptSubmit/Stop/SessionStart
+#     rows whose command contains "/fu2/hooks/")
+#   - statusLine entry if it points at our script
+#   - ~/.claude/commands/fu2.md
+#   - ~/.claude/skills/fu2 (symlink only — clone-in-place dir is left alone;
+#     user deletes that manually so we don't rm -rf the install dir we're
+#     running from)
+#
+# Leaves behind: ~/.claude/logs/fu2.log, ~/.claude/settings.json.fu2.bak,
+# the clone/project dir itself, user's config.yaml. Print those paths.
+uninstall_skill() {
+  local settings="$HOME/.claude/settings.json"
+  local cmd_file="$HOME/.claude/commands/fu2.md"
+  local removed_hooks=0 removed_statusline=0 removed_cmd=0 removed_link=0
+
+  bold "uninstalling fu2..."
+  echo ""
+
+  # ── settings.json cleanup ──
+  if [ -f "$settings" ] && jq empty "$settings" 2>/dev/null; then
+    local tmp="$settings.fu2uninstall.$$"
+    trap "rm -f '$tmp'" RETURN
+    if jq '
+      if .hooks then
+        .hooks.UserPromptSubmit = ((.hooks.UserPromptSubmit // []) | map(select([.hooks[]?.command // ""] | any(contains("/fu2/hooks/")) | not))) |
+        .hooks.Stop            = ((.hooks.Stop            // []) | map(select([.hooks[]?.command // ""] | any(contains("/fu2/hooks/")) | not))) |
+        .hooks.SessionStart    = ((.hooks.SessionStart    // []) | map(select([.hooks[]?.command // ""] | any(contains("/fu2/hooks/")) | not))) |
+        # Drop empty arrays so settings.json stays tidy
+        .hooks = (.hooks | with_entries(select(.value | length > 0)))
+      else . end |
+      # Remove statusLine if it is ours
+      if (.statusLine?.command // "") | contains("/fu2/bin/") then del(.statusLine) else . end
+    ' "$settings" > "$tmp" && jq empty "$tmp" 2>/dev/null; then
+      mv "$tmp" "$settings"
+      removed_hooks=1
+      removed_statusline=1
+    else
+      warn "could not clean settings.json — edit manually"
+      rm -f "$tmp"
+    fi
+  fi
+
+  # ── slash command ──
+  if [ -f "$cmd_file" ]; then
+    rm -f "$cmd_file" && removed_cmd=1
+  fi
+
+  # ── skill symlink (dev mode only) ──
+  if [ -L "$LINK_PATH" ]; then
+    rm -f "$LINK_PATH" && removed_link=1
+  fi
+
+  # ── Report ──
+  [ "$removed_hooks"      -eq 1 ] && ok "  ✓ hook entries removed from ~/.claude/settings.json"
+  [ "$removed_statusline" -eq 1 ] && ok "  ✓ statusLine entry removed (if present)"
+  [ "$removed_cmd"        -eq 1 ] && ok "  ✓ /fu2 slash command removed"
+  [ "$removed_link"       -eq 1 ] && ok "  ✓ skill symlink removed: $LINK_PATH"
+
+  echo ""
+  dim "left behind (delete manually if you want):"
+  dim "  $HOME/.claude/logs/fu2.log            — hook activity log"
+  dim "  $HOME/.claude/settings.json.fu2.bak   — pre-install settings backup"
+  if [ -d "$LINK_PATH" ] && [ ! -L "$LINK_PATH" ]; then
+    dim "  $LINK_PATH                            — clone-in-place install (you're inside it)"
+    dim "    to remove: cd ~ && rm -rf $LINK_PATH"
+  else
+    dim "  $PROJECT_ROOT                         — project / clone dir"
+  fi
+  echo ""
+  dim "restart Claude Code for the hooks + statusline + /fu2 to fully unload."
+}
+
 # Print the banner again (since alt-screen ate the first print).
 #
 # Layout: polished hand with raised middle finger (double-box outline,
@@ -849,7 +922,9 @@ print_success() {
   printf '  %s✓%s personality   %s%s%s\n' "$GRN" "$RST" "$BOLD" "$pokemon" "$RST"
   echo ""
   printf '  %sstart a new Claude Code session — fu2 is live%s\n' "$DIM" "$RST"
-  printf '  %s./setup configure%s re-tune dimensions  ·  %s/fu2 <name>%s switch preset in Claude Code\n' "$CYN" "$RST" "$CYN" "$RST"
+  printf '  %s./setup configure%s  re-tune dimensions   %s·%s  %s/fu2 <name>%s  switch preset in Claude Code\n' \
+    "$CYN" "$RST" "$DIM" "$RST" "$CYN" "$RST"
+  printf '  %s./setup uninstall%s  remove hooks + slash command + symlink\n' "$CYN" "$RST"
   echo ""
 }
 
@@ -901,7 +976,10 @@ case "$CMD" in
     fi
     print_success
     ;;
+  uninstall|remove)
+    uninstall_skill
+    ;;
   *)
-    fail "unknown command: $CMD (try: ./setup | ./setup configure)"
+    fail "unknown command: $CMD (try: ./setup | ./setup configure | ./setup uninstall)"
     ;;
 esac
