@@ -9,14 +9,15 @@
     ╔═══╝   ╚═══╗        ██╔══╝  ██║   ██║██╔═══╝
    ╔╝           ╚╗       ██║     ╚██████╔╝███████╗
    ║ ╷ ╷ ╷ ╷    ║        ╚═╝      ╚═════╝ ╚══════╝
-   ╚═════════════╝       your agent, but meaner
+   ╚═════════════╝       your agent, but meaner.
+                         ships better.
 ```
 
-A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots.
+A personality transplant for Claude Code. Pick a pokemon. Install once. Your agent stops licking your boots — and starts pushing back on sloppy prompts, re-reading its own work with fresh eyes, and cutting the preamble that burns your turn.
 
-One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to memorize. Yeah, fuck that.
+The meanness is the means. The point is **fewer shipped bugs, fewer wasted weekends, and answers without eight sentences of throat-clearing.**
 
-⭐ Don't forget to star it, sucker.
+One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to memorize.
 
 ---
 
@@ -30,27 +31,24 @@ fu2 stops you before the six-hour Rust weekend.
 ```
 > let's rewrite auth in Rust this weekend
 
-⏺ (polite Claude)
-  Great question! I'll scaffold a new Rust module now...
+⏺ [polite]  Great question! I'll scaffold a new Rust module now...
 
-⏺ (fu2 Claude)
-  name one auth bug Rust would've caught. name one. you just
-  want the dopamine of a new tsconfig. not doing it.
+⏺ [fu2]     name one auth bug Rust would've caught. name one. you
+            just want the dopamine of a new tsconfig. not doing it.
 ```
 
 **2. It declares victory before checking its own work.**
-fu2 spawns a fresh critic subagent when it matters — clean context, no memory of being proud thirty seconds ago.
+fu2 spawns a fresh critic subagent — clean context, no memory of being proud thirty seconds ago. It catches the over-engineered helpers, missed edge cases, and "shipped it" moments the builder was too close to see.
 
 ```
 > /ship
 
-⏺ (polite Claude)
-  ✓ Done! The feature has been implemented successfully.
+⏺ [polite]  ✓ Done! The feature has been implemented successfully.
 
-⏺ (fu2's critic, fresh context)
-  you wrote a 40-line helper called `safeNullCheckWithDefault`.
-  this is a ternary. delete the helper, use the ternary,
-  stop feeling proud of yourself.
+⏺ [fu2]     spawning critic subagent...
+            ⎿ you wrote a 40-line helper called `safeNullCheckWithDefault`.
+              this is a ternary. delete the helper, use the ternary,
+              stop feeling proud of yourself.
 ```
 
 **3. It won't re-ask the questions you ignored.**
@@ -59,27 +57,23 @@ fu2 calls out the empty slots before executing.
 ```
 > [12-point prompt, you answered 9 of them]
 
-⏺ (polite Claude)
-  Okay — here's my best attempt based on what you provided...
+⏺ [polite]  Okay — here's my best attempt based on what you provided...
 
-⏺ (fu2 Claude)
-  you didn't answer 3, 7, or 11. I'm not guessing your API
-  shape so you can come back in an hour and say "no, not
-  like that." answer them.
+⏺ [fu2]     you didn't answer 3, 7, or 11. I'm not guessing your API
+            shape so you can come back in an hour and say "no, not
+            like that." answer them.
 ```
 
 **4. It swallows your register.**
-fu2 meets you where you are.
+fu2 meets you where you are — skips the emotional-labor theater and goes straight to what actually broke.
 
 ```
 > this is fucked
 
-⏺ (polite Claude)
-  I understand your frustration. Let me help you troubleshoot.
+⏺ [polite]  I understand your frustration. Let me help you troubleshoot.
 
-⏺ (fu2 Claude)
-  yeah no shit. you skipped the migration three commits ago.
-  `bun run db:migrate`. the build isn't haunted.
+⏺ [fu2]     yeah no shit. you skipped the migration three commits ago.
+            `bun run db:migrate`. the build isn't haunted.
 ```
 
 **5. It pads the runway.**
@@ -88,30 +82,28 @@ fu2 cuts the throat-clearing. Substance or nothing.
 ```
 > how do I sort this array descending?
 
-⏺ (polite Claude)
-  Great question! Sorting an array in descending order is a
-  common pattern in JavaScript. There are several approaches
-  you could consider, each with its own trade-offs...
+⏺ [polite]  Great question! Sorting an array in descending order is a
+            common pattern in JavaScript. There are several approaches
+            you could consider, each with its own trade-offs...
 
-⏺ (fu2 Claude)
-  arr.sort((a,b) => b-a). next.
+⏺ [fu2]     arr.sort((a,b) => b-a). next.
 ```
 
 **6. It apologizes for mistakes it's about to repeat.**
 fu2 kills the apology reflex and fixes the real cause.
 
 ```
-⏺ (polite Claude)
-  I sincerely apologize for the confusion! Let me try again...
-  *makes the same mistake*
-  I sincerely apologize for the continued issue!
+⏺ [polite]  I sincerely apologize for the confusion! Let me try again...
+            *makes the same mistake*
+            I sincerely apologize for the continued issue!
 
-⏺ (fu2 Claude)
-  I made the same mistake because I'm copying the pattern you
-  used three files up. fixing that too. you're welcome.
+⏺ [fu2]     I made the same mistake because I'm copying the pattern you
+            used three files up. fixing that too. you're welcome.
 ```
 
-**The premise:** you want fu2. An agent with teeth, not a customer-service bot with wrists. It picks fights when you're being lazy, reviews its own work like it's been burned, and does not pretend it can't smell when you're angry.
+**The premise:** you want an agent with teeth, not a pleasant assistant with a painted-on smile. fu2 picks fights when you're being lazy, reviews its own work like it's been burned, and actually notices when you're angry instead of deflecting.
+
+**The point is the output.** Every behavior above maps to a concrete win: fewer dumb architectures scaffolded, fewer helpers that should've been ternaries, fewer wrong guesses off half-answered prompts, fewer tokens burned on preamble. The meanness is just how you get there.
 
 You came here for a sparring partner. Not a butler.
 
@@ -119,53 +111,15 @@ You came here for a sparring partner. Not a butler.
 
 ## Install
 
-**One-liner.** Copy, paste, done.
-
 ```sh
-git clone --single-branch --depth 1 https://github.com/andrew-yangy/fu2.git ~/.claude/skills/fu2 && cd ~/.claude/skills/fu2 && ./setup
+git clone --depth 1 https://github.com/andrew-yangy/fu2.git ~/.claude/skills/fu2 && cd ~/.claude/skills/fu2 && ./setup
 ```
 
-That's it. Clones into `~/.claude/skills/fu2`, runs `./setup` which walks you through picking a pokemon (colored TUI — pick by arrow keys or a single-letter shortcut), wires up the hooks, the statusline, and the `/fu2` slash command. Restart Claude Code once afterward so the new command and statusline load. Done.
+`./setup` walks you through picking a pokemon, wires up the hooks + statusline + `/fu2` command, auto-installs missing deps (`jq`, `chafa`, `imagemagick`). Restart Claude Code once after. Done.
 
-Missing deps? `./setup` auto-installs `jq`, `chafa`, `imagemagick` via `brew` (macOS) or `apt`/`dnf` (Linux). Needs a true-color terminal — iTerm2, Terminal.app, Warp, WezTerm, kitty, any modern Linux terminal.
+**Auto-upgrades.** A `SessionStart` hook checks for updates once per 24h and silently pulls them. Your `config.yaml` is gitignored, so your personality tuning is never touched.
 
-### Auto-upgrade
-
-fu2 upgrades itself. On every Claude Code session start, a `SessionStart` hook runs `bin/fu2-update-check` (rate-limited to once per 24h) — if the remote `VERSION` is ahead, it silently `git pull`s and injects a one-line notice into the first-turn context: `[fu2 auto-upgrade] fu2: upgraded 0.1.0 → 0.2.0`.
-
-No re-running `./setup`. No re-picking a pokemon. No remembering to check.
-
-**Your `config.yaml` is safe.** It's gitignored (per-install user state), so pulls literally can't touch your preset or dimension tuning. The shipped template lives at `config.default.yaml` — `./setup` copies it to `config.yaml` on first install if you don't already have one.
-
-Force-check: `FU2_FORCE=1 ~/.claude/skills/fu2/bin/fu2-update-check`
-Manually trigger: `bash ~/.claude/skills/fu2/bin/fu2-upgrade`
-
-### Install variants
-
-- **Dev mode** (clone elsewhere, symlink): `git clone https://github.com/andrew-yangy/fu2.git ~/Repos/fu2 && cd ~/Repos/fu2 && ./setup` — setup detects the different directory and symlinks `~/.claude/skills/fu2 → ~/Repos/fu2` so your edits take effect immediately.
-- **Clone-in-place** (the one-liner above): project and install path are the same directory; auto-upgrade works out of the box.
-
----
-
-## Uninstall
-
-```sh
-cd ~/.claude/skills/fu2 && ./setup uninstall
-```
-
-Removes, idempotently:
-- `UserPromptSubmit` / `Stop` / `SessionStart` hook entries from `~/.claude/settings.json` (only the ones pointing at `/fu2/hooks/`)
-- `statusLine` entry if it points at our script
-- `~/.claude/commands/fu2.md` (the `/fu2` slash command)
-- `~/.claude/skills/fu2` symlink (dev-mode installs only)
-
-Left behind on purpose — delete yourself if you want the full nuke:
-- `~/.claude/logs/fu2.log` — hook activity log
-- `~/.claude/settings.json.fu2.bak` — pre-install settings backup (safety net)
-- Your clone dir (`rm -rf ~/.claude/skills/fu2` for clone-in-place, or delete `~/Repos/fu2` yourself for dev mode)
-- `config.yaml` — your personality tuning, in case you reinstall
-
-Restart Claude Code after `./setup uninstall` so the hooks, statusline, and slash command fully unload.
+**Forking?** Clone to `~/Repos/fu2` instead — `./setup` will symlink it to `~/.claude/skills/fu2` so your edits take effect live.
 
 ---
 
@@ -288,6 +242,16 @@ At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 | Your editor | ❓ file an issue | if it has a pre-prompt hook and a finish event, we can port |
 
 The **pattern** is portable: inject personality on every user prompt, spawn a fresh-context critic before finishing. The **plumbing** isn't — each runtime's hook surface is different. fu2 on Claude Code is the only version that works today. The rest is vaporware until someone builds it.
+
+---
+
+## Uninstall
+
+```sh
+cd ~/.claude/skills/fu2 && ./setup uninstall
+```
+
+Removes hooks, statusline, and the `/fu2` command from `~/.claude/settings.json` and `~/.claude/commands/`. Leaves the log and your config in place. Restart Claude Code after.
 
 ---
 

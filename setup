@@ -351,7 +351,7 @@ tui_draw() {
     ╔═══╝   ╚═══╗               ██║     ╚██████╔╝███████╗
    ╔╝           ╚╗              ╚═╝      ╚═════╝ ╚══════╝
    ║ ╷  ╷  ╷  ╷  ║
-   ║             ║   your agent, but meaner (v$VERSION)
+   ║             ║   your agent, but meaner. ships better. (v$VERSION)
    ╚═════════════╝"
 
   # Measure max banner width (banner has no ANSI, so raw wc -m is fine)
@@ -862,7 +862,7 @@ ${MAG}${BOLD}
         ╔═══╝   ╚═══╗               ██║     ╚██████╔╝███████╗
        ╔╝           ╚╗              ╚═╝      ╚═════╝ ╚══════╝
        ║ ╷  ╷  ╷  ╷  ║
-       ║             ║${RST}${DIM}   your agent, but meaner (v$VERSION)${RST}
+       ║             ║${RST}${DIM}   your agent, but meaner. ships better. (v$VERSION)${RST}
 ${MAG}${BOLD}       ╚═════════════╝${RST}
 EOF
 }
