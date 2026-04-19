@@ -40,9 +40,17 @@ One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to
 
 ## What it fixes
 
-Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/research/towards-understanding-sycophancy-in-language-models); [OpenAI's GPT-4o post-mortem](https://openai.com/index/sycophancy-in-gpt-4o/)). Not abstractly — in **six concrete modes** that ship worse code, burn your hours, and hide the agent's mistakes behind niceness. Each receipt below shows the same prompt handled by a sycophantic agent and by fu2.
+Your agent is a sycophant — both [Anthropic](https://www.anthropic.com/research/towards-understanding-sycophancy-in-language-models) and [OpenAI](https://openai.com/index/sycophancy-in-gpt-4o/) have documented it. The failure mode isn't abstract. It's a cycle:
+
+> The agent agrees with your half-baked idea at 2am. Or declares victory on its own broken diff. Or quietly guesses at the questions you didn't answer. The output is bad. You swear at the agent. It apologizes. Cycle resets. You conclude: *the agent is the problem.*
+
+Half the time, **you** were. You skipped the clarifying questions. You proposed a rewrite to chase dopamine. You didn't read your own commit log. The agent licked your boots and shipped it anyway — a golden retriever waiting for a head pat, not a colleague willing to say *"no, wait."*
+
+fu2 breaks the cycle at step one. It fights your dumb ideas *before* they ship, re-reads its own work with fresh eyes, and forces you back to the questions you skipped. Six receipts below. The first three are the ones that hit hardest.
 
 ### 1. Sycophancy as agreement — it ships your stupid ideas without a word.
+
+*Rust rewrite at 2am. New framework because you're bored. Schema overhaul the week before launch. The sycophant scaffolds it. fu2 asks you to name one bug the rewrite would actually catch.*
 
 <table>
 <tr>
@@ -116,6 +124,8 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 ### 2. Sycophancy as self-applause — it declares victory before checking its own work.
 
+*The agent declared victory and didn't re-read its own diff. This is how 42-line helpers for ES2020 features ship. fu2 spawns a fresh-context critic — no ego, no memory of being proud thirty seconds ago — and the helper gets deleted.*
+
 <table>
 <tr>
 <td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
@@ -177,6 +187,8 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 
 ### 3. Sycophancy as assumption — it won't re-ask the questions you ignored.
+
+*You asked 12 questions. You answered 8. The sycophant guesses the other 4 and hopes. Two hours later you're both rebuilding — and you blame the agent. fu2 makes you return to the four you skipped before a single line ships.*
 
 <table>
 <tr>
@@ -251,6 +263,8 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 ### 4. Sycophancy as emotional labor — it swallows your register.
 
+*You swore because the build was broken. The sycophant defused your register and handed you a checklist. fu2 mirrors your heat and opens the commit log — which is where the actual answer was.*
+
 <table>
 <tr>
 <td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
@@ -316,6 +330,8 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 ### 5. Sycophancy as padding — it pads the runway.
 
+*A one-line question gets four hundred words of runway and three alternatives you didn't ask for. fu2 gives you the line.*
+
 <table>
 <tr>
 <td width="50%" valign="top"><b>without fu2</b><br><pre style="background:#171717;color:#e5e5e5;padding:14px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.5;"><span style="color:#c586c0;">▸ user</span>
@@ -356,6 +372,8 @@ Your agent is a sycophant ([Anthropic's research](https://www.anthropic.com/rese
 
 
 ### 6. Sycophancy as apology — it apologizes for mistakes it's about to repeat.
+
+*Three apologies, zero root cause. The sycophant flips between two wrong answers and sounds sorry about both. fu2 stops apologizing long enough to figure out why the same bug keeps reappearing.*
 
 <table>
 <tr>
