@@ -23,7 +23,7 @@ One `./setup`. No 20-skill framework, no config pyramid, no 40 slash commands to
 
 ## What it fixes
 
-Your agent is a sycophant. It is making you worse at your job. Six receipts.
+Your agent is a sycophant ([Anthropic's research paper](https://www.anthropic.com/research/towards-understanding-sycophancy-in-language-models); [OpenAI's GPT-4o post-mortem](https://openai.com/index/sycophancy-in-gpt-4o/)). It is making you worse at your job. Six receipts.
 
 **1. It ships your stupid ideas without a word.**
 fu2 stops you before the six-hour Rust weekend.
@@ -38,7 +38,7 @@ fu2 stops you before the six-hour Rust weekend.
 ```
 
 **2. It declares victory before checking its own work.**
-fu2 spawns a fresh critic subagent — clean context, no memory of being proud thirty seconds ago. It catches the over-engineered helpers, missed edge cases, and "shipped it" moments the builder was too close to see.
+fu2 spawns a fresh critic subagent — clean context, no memory of being proud thirty seconds ago ([why a separate critic beats self-review](https://www.anthropic.com/research/building-effective-agents)). It catches the over-engineered helpers, missed edge cases, and "shipped it" moments the builder was too close to see.
 
 ```
 > /ship
