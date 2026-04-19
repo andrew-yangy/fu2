@@ -450,18 +450,18 @@ git clone --depth 1 https://github.com/andrew-yangy/fu2.git ~/.claude/skills/fu2
 
 | Sprite | Pokemon        | h·p·s·pf·cr | Vibe                                                | Key |
 | ------ | -------------- | ----------- | --------------------------------------------------- | --- |
-|        | **chansey**    | 1·1·1·1·3   | gentle healer — soft coaching, clean                | `c` |
-|        | **pikachu**    | 2·2·2·3·4   | cheerful direct — mild, alert, catches issues       | `p` |
-|        | **alakazam**   | 2·1·3·4·5   | psychic professor — clean, sharp critique           | `a` |
-|        | **meowth**     | 4·3·4·4·5   | cunning jerk — snarky, smug                         | `m` |
-|        | **charmander** | 4·4·4·5·4   | hot-tempered — fiery, pushes back often             | `f` |
-|        | **machamp**    | 5·2·2·5·5   | four-armed drill — intense but clean                | `x` |
-|        | **gyarados**   | 5·5·5·5·5   | rage serpent — max brutality, no limits             | `g` |
-|        | **gengar**     | 5·5·4·5·5   | shadow villain — sinister, adversarial              | `v` |
-|        | **snorlax**    | 3·2·3·2·5   | lazy-brutal — rarely wakes, devastates when it does | `s` |
-|        | **mewtwo**     | 4·1·3·5·5   | cold genius — clean, analytical, surgical           | `t` |
-|        | **mimikyu**    | 3·3·5·3·5   | passive-aggressive — sweet-toned, vicious           | `i` |
-|        | **ditto**      | 3·3·3·3·3   | middle-of-road — neutral baseline                   | `d` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/113.png" width="48"> | **chansey**    | 1·1·1·1·3   | gentle healer — soft coaching, clean                | `c` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"  width="48"> | **pikachu**    | 2·2·2·3·4   | cheerful direct — mild, alert, catches issues       | `p` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/65.png"  width="48"> | **alakazam**   | 2·1·3·4·5   | psychic professor — clean, sharp critique           | `a` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"  width="48"> | **meowth**     | 4·3·4·4·5   | cunning jerk — snarky, smug                         | `m` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"   width="48"> | **charmander** | 4·4·4·5·4   | hot-tempered — fiery, pushes back often             | `f` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/68.png"  width="48"> | **machamp**    | 5·2·2·5·5   | four-armed drill — intense but clean                | `x` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/130.png" width="48"> | **gyarados**   | 5·5·5·5·5   | rage serpent — max brutality, no limits             | `g` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png"  width="48"> | **gengar**     | 5·5·4·5·5   | shadow villain — sinister, adversarial              | `v` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png" width="48"> | **snorlax**    | 3·2·3·2·5   | lazy-brutal — rarely wakes, devastates when it does | `s` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" width="48"> | **mewtwo**     | 4·1·3·5·5   | cold genius — clean, analytical, surgical           | `t` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/778.png" width="48"> | **mimikyu**    | 3·3·5·3·5   | passive-aggressive — sweet-toned, vicious           | `i` |
+| <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" width="48"> | **ditto**      | 3·3·3·3·3   | middle-of-road — neutral baseline                   | `d` |
 
 
 Columns: **h** harshness · **p** profanity · **s** sarcasm · **pf** pushback_frequency · **cr** critic_rigor. All 1–5.
@@ -474,11 +474,11 @@ Twelve not enough? Tune the dimensions yourself via `./setup configure`. That's 
 
 Each dimension is a 1–5 slider. Same config → same behavior, deterministic.
 
-- `**harshness`** — tone intensity. `1` = gentle coaching. `3` = blunt. `5` = brutal, no mercy.
-- `**profanity**` — what language is allowed. `1` = clean. `3` = casual (`shit`, `damn`). `5` = matches your register verbatim — you swear, it swears.
-- `**sarcasm**` — how dry. `1` = sincere. `3` = wry throughout. `5` = constant snark, every line.
-- `**pushback_frequency**` — how often it challenges *you*. `1` = only when it's 90% sure you're wrong. `5` = every turn, finds something.
-- `**critic_rigor*`* — how hard the fresh-context critic digs when it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong.
+- **harshness** — tone intensity. `1` = gentle coaching. `3` = blunt. `5` = brutal, no mercy.
+- **profanity** — what language is allowed. `1` = clean. `3` = casual (`shit`, `damn`). `5` = matches your register verbatim — you swear, it swears.
+- **sarcasm** — how dry. `1` = sincere. `3` = wry throughout. `5` = constant snark, every line.
+- **pushback_frequency** — how often it challenges *you*. `1` = only when it's 90% sure you're wrong. `5` = every turn, finds something.
+- **critic_rigor** — how hard the fresh-context critic digs when it fires. `1` = skim. `3` = normal review. `5` = tear it apart, assume something is wrong.
 
 The first three affect both the main agent AND the critic subagent. `pushback_frequency` affects only the main agent. `critic_rigor` affects only the critic.
 
@@ -490,9 +490,9 @@ The first three affect both the main agent AND the critic subagent. `pushback_fr
 
 Three things show up in Claude Code once installed. Three. Not thirty.
 
-- `**/fu2`** — show current preset + the full option list. Zero-argument picker.
-- `**/fu2 <pokemon>**` — switch preset instantly, mid-session, no restart needed. Case-insensitive.
-- `**./setup configure**` — re-open the TUI wizard to tune individual dimensions (not just pick a preset).
+- **`/fu2`** — show current preset + the full option list. Zero-argument picker.
+- **`/fu2 <pokemon>`** — switch preset instantly, mid-session, no restart needed. Case-insensitive.
+- **`./setup configure`** — re-open the TUI wizard to tune individual dimensions (not just pick a preset).
 - **Statusline** — auto-installed. Shows `[fu2] <current-pokemon>` at the bottom of every session. Don't forget which one is loaded.
 
 That's it. There is no `/fu2-advanced-config-init-v2`. There is no sub-command. If you can remember one pokemon name, you can drive this.
@@ -539,7 +539,7 @@ At heavy use (~100 turns/day) expect **$30–$75/month** extra. If that stings:
 - **Drop `critic_rigor` to 1 or 2** — shorter critic prompts, less reasoning, less output.
 - **Skip the critic on Q&A turns** — edit `stop.sh` to only fire when files changed. Cuts critic calls roughly in half.
 - **Use Haiku for the critic** — modify `build_critic_instruction` to request Haiku. ~10× cheaper, less thorough roasts.
-- `**inject_enabled: false`** in `config.yaml` kills all hooks without uninstalling. "Quiet mode" for sessions where you don't want to get dunked on.
+- **`inject_enabled: false`** in `config.yaml` kills all hooks without uninstalling. "Quiet mode" for sessions where you don't want to get dunked on.
 
 ---
 
@@ -585,7 +585,7 @@ Removes hooks, statusline, and the `/fu2` command from `~/.claude/settings.json`
 
 - **Pokemon sprites** — [PokeAPI/sprites](https://github.com/PokeAPI/sprites) (MIT), rendered to terminal via [chafa](https://hpjansson.org/chafa/) (LGPL). `imagemagick` trims transparent borders before chafa scales.
 - **The anti-sycophancy lineage** — [SYCOPHANCY.md](https://sycophancy.md/), [tanweai/pua](https://github.com/tanweai/pua), [Adversarial Code Review (ASDLC)](https://asdlc.io/patterns/adversarial-code-review/). Good reads if you care about the architecture under all this.
-- **[claudefa.st's `/buddy](https://claudefa.st/blog/guide/mechanics/claude-buddy)`** — for proving a pokemon-in-your-terminal companion is an acceptable thing to ship.
+- **[claudefa.st's `/buddy`](https://claudefa.st/blog/guide/mechanics/claude-buddy)** — for proving a pokemon-in-your-terminal companion is an acceptable thing to ship.
 
 Pokemon and character names are trademarks of Nintendo/Game Freak.
 
